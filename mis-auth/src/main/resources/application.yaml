@@ -1,0 +1,44 @@
+# 服务端口号
+server:
+  port: 9201
+
+# Spring 相关配置
+spring:
+  # 应用名称
+  application:
+    name: mis-auth
+
+  # 数据源配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: root # 您的数据库用户名
+    password: 2005523a # 您的数据库密码
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      # 缩短最大生命周期，强制回收旧连接
+      max-lifetime: 60000
+      # 开启连接保活检测
+      keepalive-time: 30000
+      # 验证超时时间
+      validation-timeout: 3000
+
+  # Redis 配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 123456 # 如果您的 Redis 有密码，请填写
+      database: 0 # 使用的 Redis 数据库索引
+
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  # Mapper.xml 文件位置
+  mapper-locations: classpath*:mapper/**/*.xml
+  # 实体类别名扫描包
+  type-aliases-package: edu.scau.mis.common.domain
+  configuration:
+    # 开启驼峰命名自动映射
+    map-underscore-to-camel-case: true
+
+

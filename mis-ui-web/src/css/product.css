@@ -1,0 +1,301 @@
+/* 简洁清爽版 - 产品管理样式 */
+
+.product-management {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+/* 页面头部 */
+.page-header {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.page-title {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+}
+
+/* 工具栏 */
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.add-btn,
+.batch-delete-btn {
+  padding: 10px 20px;
+  font-weight: 500;
+}
+
+.btn-icon {
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+.badge {
+  display: inline-block;
+  min-width: 20px;
+  height: 20px;
+  line-height: 20px;
+  background: #fff;
+  color: #f56c6c;
+  border-radius: 10px;
+  padding: 0 6px;
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 搜索表单 */
+.page-header .el-form {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.page-header .el-form-item {
+  margin-bottom: 0;
+  margin-right: 16px;
+}
+
+.page-header .el-form-item__label {
+  font-weight: 500;
+  color: #606266;
+}
+
+.page-header .el-input__wrapper {
+  box-shadow: 0 0 0 1px #dcdfe6 inset;
+}
+
+.page-header .el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px #c0c4cc inset;
+}
+
+.page-header .el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px #409eff inset;
+}
+
+/* 表格容器 */
+.table-container {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.product-table {
+  border-radius: 4px;
+}
+
+/* 价格 */
+.price-tag {
+  color: #f56c6c;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* 图片 */
+.image-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 4px;
+}
+
+.product-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  border: 1px solid #e4e7ed;
+}
+
+.product-image:hover {
+  transform: scale(1.1);
+}
+
+/* 操作按钮 */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* 对话框 */
+.product-dialog .el-dialog__header {
+  background: #f5f7fa;
+  padding: 20px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.product-dialog .el-dialog__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.product-dialog .el-dialog__body {
+  padding: 24px;
+}
+
+.product-dialog .el-form-item {
+  margin-bottom: 20px;
+}
+
+.product-dialog .el-form-item__label {
+  font-weight: 500;
+  color: #606266;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #e4e7ed;
+}
+
+.dialog-footer .el-button {
+  min-width: 90px;
+}
+
+/* 抽屉 */
+.el-drawer__header {
+  padding: 20px;
+  margin: 0;
+  background: #f5f7fa;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.el-drawer__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.el-drawer__body {
+  padding: 24px;
+}
+
+.el-descriptions {
+  background: #ffffff;
+  border-radius: 4px;
+}
+
+.el-descriptions__label {
+  font-weight: 500;
+  color: #606266;
+  background: #f5f7fa !important;
+}
+
+.el-descriptions__content {
+  color: #303133;
+}
+
+/* 表格样式 */
+.el-table th.el-table__cell {
+  background: #f5f7fa !important;
+  color: #303133;
+  font-weight: 600;
+}
+
+.el-table .el-table__cell {
+  padding: 12px 0;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background: #fafafa;
+}
+
+.el-table__body tr:hover > td {
+  background: #f0f9ff !important;
+}
+
+/* 标签 */
+.el-tag {
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* 响应式 */
+@media (max-width: 1024px) {
+  .product-management {
+    padding: 16px;
+  }
+
+  .page-header {
+    padding: 20px;
+  }
+
+  .toolbar {
+    width: 100%;
+  }
+
+  .page-header .el-form-item {
+    display: block;
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+
+  .page-header .el-input,
+  .page-header .el-select {
+    width: 100% !important;
+  }
+
+  .table-container {
+    padding: 16px;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 20px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+  }
+
+  .add-btn,
+  .batch-delete-btn {
+    width: 100%;
+  }
+
+  .dialog-footer {
+    flex-direction: column;
+  }
+
+  .dialog-footer .el-button {
+    width: 100%;
+  }
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

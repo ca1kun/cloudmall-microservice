@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="edu.scau.mis.product.mapper.IProductMapper">
+    <resultMap type="edu.scau.mis.common.domain.Product" id="productResultMap">
+        <id property="productId"    column="product_id"    />
+        <result property="productSn"    column="product_sn"    />
+        <result property="productName"    column="product_name"    />
+        <result property="productDescription"    column="product_description"    />
+        <result property="price"    column="price"    />
+        <result property="productCategoryId"    column="product_category_id"    />
+        <result property="imageUrl"    column="image_url"    />
+        <result property="detailUrl"    column="detail_url"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="stock"    column="stock"    />
+        <association property="category" javaType="edu.scau.mis.common.domain.Category">
+            <id property="categoryId" column="category_id"/>
+            <result property="parentId" column="parent_id"/>
+            <result property="categoryName" column="category_name"/>
+        </association>
+    </resultMap>
+    <sql id="selectProductVo">
+        SELECT
+            p.product_id,
+            p.product_sn,
+            p.product_name,
+            p.product_description,
+            p.price,
+            p.product_category_id,
+            p.image_url,
+            p.detail_url,
+            p.create_by,
+            p.create_time,
+            p.update_by,
+            p.update_time,
+            p.stock,
+            c.category_id,
+            c.parent_id,
+            c.category_name
+        FROM pos_product p LEFT JOIN pos_category c
+                                     ON p.product_category_id = c.category_id
+    </sql>
+    <!--  根据查询单个商品  -->
+    <select id="selectProductById" parameterType="Long"  resultMap="productResultMap">
+        <include refid="selectProductVo"/>
+        WHERE p.product_id = #{productId}
+    </select>
+    <select id="selectProductBySn" parameterType="String"  resultMap="productResultMap">
+        <include refid="selectProductVo"/>
+        WHERE p.product_sn = #{productSn}
+    </select>
+    <select id="selectAllProductList" parameterType="String"  resultMap="productResultMap">
+        <include refid="selectProductVo"/>
+        order by p.product_id ASC
+    </select>
+
+    <select id="selectProductList" parameterType="Product" resultMap="productResultMap">
+        <include refid="selectProductVo"/>
+        <where>
+            <if test="productSn != null  and productSn != ''">and p.product_sn = #{productSn}</if>
+            <if test="productName != null  and productName != ''">and p.product_name like concat('%', #{productName},
+                '%')
+            </if>
+            <if test="productCategoryId != null  and  productCategoryId != 0">and p.product_category_id =
+                #{productCategoryId}
+            </if>
+            <if test="productCategoryId != null and productCategoryId != 0">
+                and p.product_category_id = #{productCategoryId}
+            </if>
+        </where>
+        ORDER BY p.product_id ASC
+    </select>
+    <select id="selectProductByNameAndCategoryId" parameterType="Product" resultMap="productResultMap">
+        <include refid="selectProductVo"/>
+        <where>
+            <if test="productName != null and productName != ''">
+                AND product_name LIKE CONCAT('%', #{productName}, '%')
+            </if>
+            <if test="productCategoryId != null">
+                AND product_category_id = #{productCategoryId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectBatchIds" resultType="edu.scau.mis.common.domain.Product">
+        SELECT * FROM pos_product WHERE pos_product.product_id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <!--  新增商品  -->
+    <insert id="insertProduct" parameterType="Product" useGeneratedKeys="true" keyProperty="productId">
+        insert into pos_product
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="productSn != null">product_sn,</if>
+            <if test="productName != null">product_name,</if>
+            <if test="price != null">price,</if>
+            <if test="productCategoryId != null">product_category_id,</if>
+            <if test="productDescription != null">product_description,</if>
+            <if test="imageUrl != null">image_url,</if>
+            <if test="detailUrl != null">detail_url,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="stock != null">stock,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="productSn != null">#{productSn},</if>
+            <if test="productName != null">#{productName},</if>
+            <if test="price != null">#{price},</if>
+            <if test="productCategoryId != null">#{productCategoryId},</if>
+            <if test="productDescription != null">#{productDescription},</if>
+            <if test="imageUrl != null">#{imageUrl},</if>
+            <if test="detailUrl != null">#{detailUrl},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="stock != null">#{stock},</if>
+        </trim>
+    </insert>
+
+    <!--  修改商品  -->
+    <update id="updateProduct" parameterType="Product">
+        update pos_product
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="productSn != null">product_sn = #{productSn},</if>
+            <if test="productName != null">product_name = #{productName},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="productCategoryId != null">product_category_id = #{productCategoryId},</if>
+            <if test="productDescription != null">product_description = #{productDescription},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+            <if test="detailUrl != null">detail_url = #{detailUrl},</if>
+            <if test="stock != null">stock = #{stock},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where product_id = #{productId}
+    </update>
+
+    <!--  删除商品  -->
+    <delete id="deleteProductById" parameterType="Long">
+        delete from pos_product where product_id = #{productId}
+    </delete>
+
+    <!--  批量删除商品  -->
+    <delete id="deleteProductByIds" parameterType="Long">
+        delete from pos_product where product_id in
+        <foreach item="productId" collection="array" open="(" separator="," close=")">
+            #{productId}
+        </foreach>
+    </delete>
+
+
+</mapper>

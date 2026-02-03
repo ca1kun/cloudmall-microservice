@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace 必须精确指向你的 Mapper 接口的完整路径 -->
+<mapper namespace="edu.scau.mis.product.mapper.ISaleMapper">
+
+    <!-- 定义一个基础的 ResultMap，用于映射 Sale 实体 -->
+    <resultMap type="edu.scau.mis.product.domain.Sale" id="SaleResultMap">
+        <id     property="saleId"       column="sale_id"       />
+        <result property="saleNo"       column="sale_no"       />
+        <result property="total"        column="total"         />
+        <result property="saleTime"     column="sale_time"     />
+        <result property="status"       column="status"        />
+        <result property="paymentId"    column="payment_id"    />
+        <result property="createBy"     column="create_by"     />
+        <result property="createTime"   column="create_time"   />
+        <result property="updateBy"     column="update_by"     />
+        <result property="updateTime"   column="update_time"   />
+    </resultMap>
+
+    <!-- 优化点 1: 简化 selectSaleById，只查询主表信息。
+         加载 SaleItem 的工作由 Service 层的 loadSaleAggregate 方法完成。 -->
+    <select id="selectSaleById" parameterType="Long" resultMap="SaleResultMap">
+        SELECT * FROM pos_sale WHERE sale_id = #{saleId}
+    </select>
+
+    <!-- 优化点 2: 简化 selectSaleList 的查询条件和返回结果 -->
+    <select id="selectSaleList" parameterType="edu.scau.mis.product.domain.Sale" resultMap="SaleResultMap">
+        SELECT *
+        FROM pos_sale
+        <where>
+            <!-- 优化点: 对于数字类型，只判断 null 即可 -->
+            <if test="saleId != null"> and sale_id = #{saleId}</if>
+            <if test="saleNo != null and saleNo != ''"> and sale_no like concat('%', #{saleNo}, '%')</if>
+            <if test="status != null and status != ''"> and status = #{status}</if>
+            <if test="paymentId != null"> and payment_id = #{paymentId}</if>
+        </where>
+        ORDER BY sale_id
+    </select>
+
+    <!-- 优化点 3: 简化 insertSale，使用更直接的静态SQL。
+         因为 Service 层创建的 Sale 对象总是包含这些核心字段。-->
+    <insert id="insertSale" parameterType="edu.scau.mis.product.domain.Sale" useGeneratedKeys="true" keyProperty="saleId">
+        INSERT INTO pos_sale (
+            sale_no, total, sale_time, status,
+            create_by, create_time, update_by, update_time
+        )
+        VALUES (
+                   #{saleNo}, #{total}, #{saleTime}, #{status},
+                   #{createBy}, #{createTime}, #{updateBy}, #{updateTime}
+               )
+    </insert>
+
+    <!-- updateSale 的实现非常好，使用动态SQL非常适合更新场景，予以保留 -->
+    <update id="updateSale" parameterType="edu.scau.mis.product.domain.Sale">
+        UPDATE pos_sale
+        <set>
+            <if test="saleNo != null and saleNo != ''">sale_no = #{saleNo},</if>
+            <if test="total != null">total = #{total},</if>
+            <if test="saleTime != null">sale_time = #{saleTime},</if>
+            <if test="paymentId != null">payment_id = #{paymentId},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </set>
+        WHERE sale_id = #{saleId}
+    </update>
+
+</mapper>

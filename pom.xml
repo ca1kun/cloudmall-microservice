@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =============================================================== -->
+    <!-- 1. Project Coordinates & Packaging                            -->
+    <!-- =============================================================== -->
+    <groupId>edu.scau.mis</groupId>
+    <artifactId>微服务电商系统</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+
+    <!-- =============================================================== -->
+    <!-- 2. Spring Boot Parent                                         -->
+    <!-- =============================================================== -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.5</version>
+        <relativePath/>
+    </parent>
+
+    <!-- =============================================================== -->
+    <!-- 3. Sub-modules                                                -->
+    <!-- =============================================================== -->
+    <modules>
+        <module>mis-common</module>
+        <module>mis-product</module>
+        <module>mis-api</module>
+        <module>mis-auth</module>
+        <module>mis-marketing</module>
+        <module>mis-cart</module>
+        <module>mis-order</module>
+        <module>mis-gateway</module>
+        <module>mis-pay</module>
+    </modules>
+
+    <!-- =============================================================== -->
+    <!-- 4. Properties (统一版本管理)                                  -->
+    <!-- =============================================================== -->
+    <properties>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Spring Cloud -->
+        <spring-cloud.version>2022.0.4</spring-cloud.version>
+        <spring-cloud-alibaba.version>2022.0.0.0</spring-cloud-alibaba.version>
+
+        <!-- 数据库与持久化 -->
+        <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
+        <pagehelper.version>2.1.0</pagehelper.version>
+
+        <!-- 工具库 -->
+        <hutool.version>5.8.25</hutool.version>
+        <lombok.version>1.18.30</lombok.version>
+        <jjwt.version>0.11.5</jjwt.version>
+        <redisson.version>3.24.0</redisson.version>
+        <aliyun-oss.version>3.15.1</aliyun-oss.version>
+        <jaxb-api.version>2.3.1</jaxb-api.version>
+
+        <!-- API 文档 -->
+        <knife4j.version>4.4.0</knife4j.version>
+    </properties>
+
+    <!-- =============================================================== -->
+    <!-- 5. Dependency Management (统一依赖管理)                         -->
+    <!-- =============================================================== -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Cloud BOM -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud Alibaba BOM -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- 内部模块 -->
+            <dependency>
+                <groupId>edu.scau.mis</groupId>
+                <artifactId>mis-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.scau.mis</groupId>
+                <artifactId>mis-product</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- 数据库与持久化 -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.pagehelper</groupId>
+                <artifactId>pagehelper-spring-boot-starter</artifactId>
+                <version>${pagehelper.version}</version>
+            </dependency>
+
+            <!-- 工具库 -->
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
+
+            <!-- JWT -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
+            <!-- API 文档 -->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
+            </dependency>
+
+            <!-- 其他 -->
+            <dependency>
+                <groupId>com.aliyun.oss</groupId>
+                <artifactId>aliyun-sdk-oss</artifactId>
+                <version>${aliyun-oss.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb-api.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

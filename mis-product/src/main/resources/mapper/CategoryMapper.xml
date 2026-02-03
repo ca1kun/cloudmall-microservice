@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="edu.scau.mis.product.mapper.ICategoryMapper">
+
+    <resultMap type="edu.scau.mis.common.domain.Category" id="categoryResultMap">
+        <id property="categoryId" column="category_id" />
+        <result property="parentId" column="parent_id" />
+        <result property="categoryName" column="category_name" />
+        <result property="createBy" column="create_by" />
+        <result property="createTime" column="create_time" />
+        <result property="updateBy" column="update_by" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <sql id="selectCategoryVo">
+        SELECT
+            category_id,
+            parent_id,
+            category_name,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM pos_category
+    </sql>
+
+    <!-- 根据ID查询分类 -->
+    <select id="selectCategoryById" parameterType="Long" resultMap="categoryResultMap">
+        <include refid="selectCategoryVo"/>
+        WHERE category_id = #{categoryId}
+    </select>
+
+    <!-- 查询所有分类 -->
+    <select id="selectAllCategoryList" resultMap="categoryResultMap">
+        <include refid="selectCategoryVo"/>
+        ORDER BY category_id ASC
+    </select>
+
+    <!-- 新增分类 -->
+    <insert id="insertCategory" parameterType="edu.scau.mis.common.domain.Category" useGeneratedKeys="true" keyProperty="categoryId">
+        INSERT INTO pos_category
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="parentId != null">parent_id,</if>
+            <if test="categoryName != null">category_name,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="parentId != null">#{parentId},</if>
+            <if test="categoryName != null">#{categoryName},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <!-- 修改分类 -->
+    <update id="updateCategory" parameterType="edu.scau.mis.common.domain.Category">
+        UPDATE pos_category
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="categoryName != null">category_name = #{categoryName},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        WHERE category_id = #{categoryId}
+    </update>
+
+    <!-- 删除分类 -->
+    <delete id="deleteCategoryById" parameterType="Long">
+        DELETE FROM pos_category WHERE category_id = #{categoryId}
+    </delete>
+
+</mapper>

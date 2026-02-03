@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>edu.scau.mis</groupId>
+        <artifactId>微服务电商系统</artifactId>
+        <version>1.0</version>
+    </parent>
+
+    <artifactId>mis-marketing</artifactId>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- 依赖通用模块 (里面有 MP, Redis, RabbitMQ, Redisson 等配置) -->
+        <dependency>
+            <groupId>edu.scau.mis</groupId>
+            <artifactId>mis-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Web 环境 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 以后如果要由 mis-web 调用它，可能需要 OpenFeign，暂时先不做 -->
+    </dependencies>
+
+</project>

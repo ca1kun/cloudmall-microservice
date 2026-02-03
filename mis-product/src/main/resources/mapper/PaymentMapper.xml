@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="edu.scau.mis.product.mapper.IPaymentMapper">
+    <resultMap type="edu.scau.mis.product.domain.Payment" id="paymentResultMap">
+        <id property="paymentId"    column="payment_id"    />
+        <result property="paymentNo"    column="payment_no"    />
+        <result property="saleId"    column="sale_id"    />
+        <result property="amount"    column="amount"    />
+        <result property="payTime"    column="pay_time"    />
+        <result property="payMethod"    column="pay_method"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <!-- 新增支付对象 -->
+    <insert id="insertPayment" parameterType="edu.scau.mis.product.domain.Payment" useGeneratedKeys="true" keyProperty="paymentId">
+        INSERT INTO pos_payment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="paymentNo != null">payment_no,</if>
+            <if test="saleId != null">sale_id,</if>
+            <if test="amount != null">amount,</if>
+            <if test="payTime != null">pay_time,</if>
+            <if test="payMethod != null">pay_method,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="paymentNo != null">#{paymentNo},</if>
+            <if test="saleId != null">#{saleId},</if>
+            <if test="amount != null">#{amount},</if>
+            <if test="payTime != null">#{payTime},</if>
+            <if test="payMethod != null">#{payMethod},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <!--根据id查询支付对象-->
+    <select id="selectPaymentById" parameterType="Long" resultMap="paymentResultMap">
+        SELECT payment_id, payment_no, sale_id, amount, pay_time, pay_method, create_by, create_time, update_by, update_time
+        FROM pos_payment
+        WHERE payment_id = #{paymentId}
+    </select>
+
+</mapper>

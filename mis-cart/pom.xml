@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>edu.scau.mis</groupId>
+        <artifactId>微服务电商系统</artifactId>
+        <version>1.0</version>
+    </parent>
+
+    <artifactId>mis-cart</artifactId>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <!-- 1. 引入 Common (包含 Entity, Utils, Redis, Security依赖) -->
+        <dependency>
+            <groupId>edu.scau.mis</groupId>
+            <artifactId>mis-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- 2. Web 环境 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 3. RabbitMQ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+        <!--openfeign-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <!-- 如果你的父工程没有管理 spring-cloud 版本，可能需要指定版本，例如 4.0.4 (对应 Boot 3.1.x) -->
+        </dependency>
+        <!-- 还需要 LoadBalancer (新版 SpringCloud 必须) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>

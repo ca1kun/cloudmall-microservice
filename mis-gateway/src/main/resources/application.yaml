@@ -1,0 +1,88 @@
+server:
+  port: 8080 # 网关统一对外端口
+
+spring:
+  application:
+    name: mis-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848 # Nacos 服务器地址
+
+    gateway:
+      # ===============================================================
+      # 1. 全局配置
+      # ===============================================================
+      # 关闭自动路由，所有路由规则必须在此处显式定义，增强安全性
+      discovery:
+        locator:
+          enabled: false
+
+      # 全局跨域配置 (CORS)
+      globalcors:
+        cors-configurations:
+          '[/**]': # 匹配所有路径
+            allowed-origin-patterns: "*" # 使用 patterns 模式以兼容 allow-credentials
+            allowed-headers: "*"
+            allowed-methods: "*" # 允许所有 HTTP 方法
+            allow-credentials: true
+            max-age: 3600 # 预检请求的缓存时间 (1小时)
+        add-to-simple-url-handler-mapping: true
+
+      # ===============================================================
+      # 2. 路由规则定义 (Routes)
+      # 统一规则：前端访问 /api/{path} -> 网关去掉 /api -> 转发给后端服务的 /{path}
+      # ===============================================================
+      routes:
+        # --- 认证服务 (mis-auth) ---
+        # 访问: /api/auth/login -> 转发到 mis-auth -> /auth/login
+        - id: mis-auth-route
+          uri: lb://mis-auth
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1 # 去掉路径的第1部分 (/api)
+
+        # --- API聚合服务 (mis-api) ---
+        - id: mis-api-route
+          uri: lb://mis-api
+          predicates:
+            # ✅ 关键修复：将所有路径合并到同一行，并添加了根路径'/'
+            - Path=/api/product/**, /api/category/**, /api/sale/**, /api/system/user/profile/**, /api/common/**, /api/
+          filters:
+            - StripPrefix=1 # 去掉路径的第1部分 (/api)
+
+        # --- 购物车服务 (mis-cart) ---
+        # 访问: /api/cart/list -> 转发到 mis-cart -> /cart/list
+        - id: mis-cart-route
+          uri: lb://mis-cart
+          predicates:
+            - Path=/api/cart/**
+          filters:
+            - StripPrefix=1
+
+        # --- 订单服务 (mis-order) ---
+        # 访问: /api/order/create -> 转发到 mis-order -> /order/create
+        - id: mis-order-route
+          uri: lb://mis-order
+          predicates:
+            - Path=/api/order/**
+          filters:
+            - StripPrefix=1
+
+        # --- 营销服务 (mis-marketing) ---
+        # 访问: /api/coupon/list -> 转发到 mis-marketing -> /coupon/list
+        - id: mis-marketing-route
+          uri: lb://mis-marketing
+          predicates:
+            - Path=/api/coupon/**
+          filters:
+            - StripPrefix=1
+
+        # --- 支付服务 (mis-pay) ---
+        - id: mis-pay-route
+          uri: lb://mis-pay  # 对应 Nacos 里的服务名
+          predicates:
+            - Path=/api/pay/**
+          filters:
+            - StripPrefix=1

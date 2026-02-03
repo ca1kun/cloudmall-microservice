@@ -1,0 +1,72 @@
+spring:
+  mvc:
+    # 当找不到处理器时，抛出 NoHandlerFoundException 异常
+    throw-exception-if-no-handler-found: true
+  profiles:
+    active: dev
+  devtools:
+    restart:
+      enabled: true
+      poll-interval: 1000ms
+      quiet-period: 400ms
+    livereload:
+      enabled: true
+  # 数据源
+  datasource:
+    # 连接池hikari
+    type: com.zaxxer.hikari.HikariDataSource
+    # 驱动程序
+    driverClassName: com.mysql.cj.jdbc.Driver
+    # 连接参数
+    url: jdbc:mysql://localhost:3306/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: root
+    password: 2005523a
+    hikari:
+      # 缩短最大生命周期，强制回收旧连接
+      max-lifetime: 60000
+      # 开启连接保活检测
+      keepalive-time: 30000
+      # 验证超时时间
+      validation-timeout: 3000
+  data:
+    redis:
+      password: 123456
+      host: 127.0.0.1
+      port: 6379
+      timeout: 3000ms      # 连接超时时间
+      lettuce:
+        pool:
+          max-active: 10 # 最大连接数
+          max-idle: 10 # 最大空闲连接
+          max-wait: -1ms   # 最大阻塞等待时间
+          min-idle: 1
+          time-between-eviction-runs: 10s
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+
+mybatis-plus:
+  # 明确告诉 MyBatis-Plus 去哪里找 XML 文件
+  # 这个配置是最标准、最不容易出错的
+  mapper-locations: classpath*:/mapper/**/*.xml
+  # 如果您有实体类别名，可以在这里配置
+  type-aliases-package: edu.scau.mis.common.domain
+  # 全局配置
+  global-config:
+    db-config:
+      # 禁用 ddl
+      enable-ddl: false
+  # mybatis 原生配置，可以放在 mybatis-plus 下
+  configuration:
+    map-underscore-to-camel-case: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  packages-to-scan: edu.scau.mis.web.controller
+

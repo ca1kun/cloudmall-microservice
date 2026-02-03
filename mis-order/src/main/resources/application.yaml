@@ -1,0 +1,53 @@
+server:
+  port: 8085 # 订单模块端口
+
+spring:
+  application:
+    name: mis-order
+  # 数据库、Redis、RabbitMQ 配置直接复制 mis-cart 的
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 2000 # 连接超时 2秒
+            readTimeout: 5000    # 读取超时 5秒
+  # 数据源
+  datasource:
+    # 连接池hikari
+    type: com.zaxxer.hikari.HikariDataSource
+    # 驱动程序
+    driverClassName: com.mysql.cj.jdbc.Driver
+    # 连接参数
+    url: jdbc:mysql://localhost:3306/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: root
+    password: 2005523a
+    hikari:
+      # 默认是 10，压测时建议调大到 50-100
+      maximum-pool-size: 50
+      # 最小空闲连接
+      minimum-idle: 10
+      # 缩短最大生命周期，强制回收旧连接
+      max-lifetime: 60000
+      # 开启连接保活检测
+      keepalive-time: 30000
+      # 验证超时时间
+      validation-timeout: 3000
+  data:
+    redis:
+      password: 123456
+      host: 127.0.0.1
+      port: 6379
+      timeout: 3000ms      # 连接超时时间
+      lettuce:
+        pool:
+          max-active: 10 # 最大连接数
+          max-idle: 10 # 最大空闲连接
+          max-wait: -1ms   # 最大阻塞等待时间
+          min-idle: 1
+          time-between-eviction-runs: 10s
