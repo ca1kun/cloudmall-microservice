@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>edu.scau.mis</groupId>
-        <artifactId>微服务电商系统</artifactId>
+        <artifactId>microservice-ecommerce-system</artifactId>
         <version>1.0</version>
     </parent>
     <artifactId>mis-common</artifactId>
@@ -44,7 +44,8 @@
         <!-- 数据与存储 -->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>3.5.5</version>
         </dependency>
         <dependency>
             <groupId>com.mysql</groupId>

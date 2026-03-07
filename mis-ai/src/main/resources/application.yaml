@@ -1,0 +1,30 @@
+server:
+  port: 8087 # AI 服务端口
+
+spring:
+  application:
+    name: mis-ai
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        ip: 127.0.0.1
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: 123456
+
+  # 👇👇👇 Spring AI 配置 👇👇👇
+  ai:
+    openai:
+      # 填你刚才申请的 Key
+      api-key: sk-ab157cee7a9d4b2bae2ed29709ea5d19
+      # 关键：DeepSeek 的 API 地址
+      base-url: https://api.deepseek.com
+      chat:
+        options:
+          # DeepSeek 的模型名字
+          model: deepseek-chat
+          # 温度 (0-1)，越低回答越严谨，越高越发散
+          temperature: 0.7
