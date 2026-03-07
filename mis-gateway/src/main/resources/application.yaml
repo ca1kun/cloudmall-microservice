@@ -86,3 +86,11 @@ spring:
             - Path=/api/pay/**
           filters:
             - StripPrefix=1
+
+        # --- AI 服务 (mis-ai) ---
+        - id: mis-ai-route
+          uri: lb://mis-ai
+          predicates:
+            - Path=/api/ai/**
+          filters:
+            - StripPrefix=1
