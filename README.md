@@ -76,12 +76,59 @@
 2. 登录 Nacos (`localhost:8848`) 导入配置。
 3. 按照 `Gateway` -> `Auth` -> `业务模块` 的顺序启动。
 
-### 3. 前端启动
-```bash
-cd mis-ui-web
-npm install
-npm run dev
+#### 一键启动（Windows PowerShell）
+在项目根目录执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-all.ps1
 ```
+
+常用命令：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\status-all.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\stop-all.ps1
+```
+
+只启动指定模块（示例）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-all.ps1 -Services mis-auth,mis-api,mis-gateway
+```
+
+只操作单个模块（以 `mis-api` 为例）：
+
+```powershell
+# 只停止 mis-api
+powershell -ExecutionPolicy Bypass -File .\scripts\stop-all.ps1 -Services mis-api
+
+# 只启动 mis-api
+powershell -ExecutionPolicy Bypass -File .\scripts\start-all.ps1 -Services mis-api
+
+# 重启 mis-api（先停再启）
+powershell -ExecutionPolicy Bypass -File .\scripts\stop-all.ps1 -Services mis-api
+powershell -ExecutionPolicy Bypass -File .\scripts\start-all.ps1 -Services mis-api
+powershell -ExecutionPolicy Bypass -File .\scripts\status-all.ps1 -Services mis-api
+```
+
+报错排查（优先看 err）：
+
+```powershell
+# 查看 mis-api 错误日志（最近 120 行）
+Get-Content .\runtime\logs\mis-api.err.log -Tail 120
+
+# 实时跟踪 mis-api 错误日志
+Get-Content .\runtime\logs\mis-api.err.log -Tail 120 -Wait
+```
+
+如果 `mis-api.err.log` 为空，再看标准输出日志（很多 Spring 异常会打到 out）：
+
+```powershell
+Get-Content .\runtime\logs\mis-api.out.log -Tail 120
+Get-Content .\runtime\logs\mis-api.out.log -Tail 120 -Wait
+```
+
+日志目录：`runtime/logs`，PID 目录：`runtime/pids`。
 
 ---
 
