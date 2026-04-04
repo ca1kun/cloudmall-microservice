@@ -58,3 +58,10 @@ logs/
 *.log
 tmp/
 temp/
+
+# ===========================
+# 6. 本地私密配置（不入库）
+# ===========================
+config/secrets/application-secrets.yaml
+**/application-local.yaml
+**/application-local-*.yaml
