@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:./config/secrets/application-secrets.yaml
   profiles:
     active: dev
   devtools:
@@ -15,9 +17,9 @@ spring:
     # 驱动程序
     driverClassName: com.mysql.cj.jdbc.Driver
     # 连接参数
-    url: jdbc:mysql://localhost:3306/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-    username: root
-    password: 2005523a
+    url: jdbc:mysql://localhost:3306/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT
+    username: ${secrets.mysql.username}
+    password: ${secrets.mysql.password}
     hikari:
       # 缩短最大生命周期，强制回收旧连接
       max-lifetime: 60000
@@ -27,7 +29,7 @@ spring:
       validation-timeout: 3000
   data:
     redis:
-      password: 123456
+      password: ${secrets.redis.password}
       host: 127.0.0.1
       port: 6379
       timeout: 3000ms      # 连接超时时间
@@ -50,11 +52,6 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   # 如果您有实体类别名，可以在这里配置
   type-aliases-package: edu.scau.mis.common.domain
-  # 全局配置
-  global-config:
-    db-config:
-      # 禁用 ddl
-      enable-ddl: false
   # mybatis 原生配置，可以放在 mybatis-plus 下
   configuration:
     map-underscore-to-camel-case: true

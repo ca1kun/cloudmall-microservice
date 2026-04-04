@@ -76,6 +76,19 @@
 2. 登录 Nacos (`localhost:8848`) 导入配置。
 3. 按照 `Gateway` -> `Auth` -> `业务模块` 的顺序启动。
 
+#### 2.1 本地敏感配置（必须先做）
+
+项目已将数据库/Redis/RabbitMQ/OSS/AI/支付私钥等敏感信息从模块配置中抽离。
+
+```powershell
+Copy-Item .\config\secrets\application-secrets.example.yaml .\config\secrets\application-secrets.yaml
+```
+
+然后编辑 `config/secrets/application-secrets.yaml`，填入你自己的本地密钥与密码。
+
+- `config/secrets/application-secrets.yaml`：本地私密文件，已在 `.gitignore` 中忽略，不会入库。
+- `config/secrets/application-secrets.example.yaml`：团队模板文件，可提交并同步字段规范。
+
 #### 一键启动（Windows PowerShell）
 在项目根目录执行：
 

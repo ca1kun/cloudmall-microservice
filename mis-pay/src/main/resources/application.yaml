@@ -2,21 +2,23 @@ server:
   port: 8086 # 支付模块端口
 
 alipay:
-  app-id: **************** # 你的沙箱APPID
-  private-key: **************** # 应用私钥
-  public-key: **************** # 支付宝公钥
-  gateway-url: **************** # 沙箱网关
+  app-id: 9021000159643102 # 你的沙箱APPID
+  private-key: ${secrets.alipay.private-key}
+  public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmkfln5hJ4X4vGsi+Lm90VSfmsndHpFlgEurfiuGF58X7a6TM+iSX/5jiwU8j70jC3C3e6qTR6W3XALzE1hNrSCfFn9dOh2i4InmmQnk6JU5Er+nJnn7b33S0rUyJTPHmxpMX5spGM+8+QO6qCFgo/qBB/sw7gtde/hiSz6cHcJqEAjgttSe2NX/1Z9yQMntj/+km6JZ6u38iBjwYWs1qydTf7ZdK05nosnf2SYyBqNq0JmBM9P4pYNBnw64HInbW4Jj39G4FBk8r+DFGGz7FnXIsODQ5W2CcY+kaU/jwHm3XRN035BdS+PYPQnUT66ofhzVMX2cMLINd/+kihKk7twIDAQAB # 支付宝公钥
+  gateway-url: https://openapi-sandbox.dl.alipaydev.com/gateway.do # 沙箱网关
   return-url: http://localhost:5174/mall/pay/success # 支付成功后跳回前端页面
 
 spring:
+  config:
+    import: optional:file:./config/secrets/application-secrets.yaml
   application:
     name: mis-pay
   # 数据库、Redis、RabbitMQ 配置直接复制 mis-cart 的
   rabbitmq:
     host: localhost
     port: 5672
-    username: guest
-    password: guest
+    username: ${secrets.rabbitmq.username}
+    password: ${secrets.rabbitmq.password}
   cloud:
     openfeign:
       client:
@@ -32,8 +34,8 @@ spring:
     driverClassName: com.mysql.cj.jdbc.Driver
     # 连接参数
     url: jdbc:mysql://localhost:3306/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-    username: root
-    password: 2005523a
+    username: ${secrets.mysql.username}
+    password: ${secrets.mysql.password}
     hikari:
       # 默认是 10，压测时建议调大到 50-100
       maximum-pool-size: 50
@@ -47,7 +49,7 @@ spring:
       validation-timeout: 3000
   data:
     redis:
-      password: 123456
+      password: ${secrets.redis.password}
       host: 127.0.0.1
       port: 6379
       timeout: 3000ms      # 连接超时时间

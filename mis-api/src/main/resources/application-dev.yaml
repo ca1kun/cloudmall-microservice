@@ -4,9 +4,9 @@ server:
 aliyun:
   oss:
     endpoint: http://oss-cn-shenzhen.aliyuncs.com
-    accessKeyId: ****************
-    accessKeySecret: ****************
-    bucketName: ****************
+    accessKeyId: ${secrets.aliyun.oss.access-key-id}
+    accessKeySecret: ${secrets.aliyun.oss.access-key-secret}
+    bucketName: ${secrets.aliyun.oss.bucket-name}
 
 logging:
   level:
