@@ -1,10 +1,7 @@
 spring:
-  application:
-    name: mis-marketing # 服务名 (Nacos 上显示的名字)
+  config:
+    import: optional:file:/config/secrets/application-secrets.yaml
   cloud:
     nacos:
       discovery:
-        server-addr: 127.0.0.1:8848 # Nacos 地址
-        # 👇 强制使用 127.0.0.1，不管网络怎么变，我都找本地
-        ip: 127.0.0.1
-        port: ${server.port} # 保持端口不变
+        server-addr: ${NACOS_ADDR:nacos:8848}

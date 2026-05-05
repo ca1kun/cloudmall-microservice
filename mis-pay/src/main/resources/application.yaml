@@ -1,62 +1,54 @@
 server:
-  port: 8086 # 支付模块端口
-
-alipay:
-  app-id: 9021000159643102 # 你的沙箱APPID
-  private-key: ${secrets.alipay.private-key}
-  public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmkfln5hJ4X4vGsi+Lm90VSfmsndHpFlgEurfiuGF58X7a6TM+iSX/5jiwU8j70jC3C3e6qTR6W3XALzE1hNrSCfFn9dOh2i4InmmQnk6JU5Er+nJnn7b33S0rUyJTPHmxpMX5spGM+8+QO6qCFgo/qBB/sw7gtde/hiSz6cHcJqEAjgttSe2NX/1Z9yQMntj/+km6JZ6u38iBjwYWs1qydTf7ZdK05nosnf2SYyBqNq0JmBM9P4pYNBnw64HInbW4Jj39G4FBk8r+DFGGz7FnXIsODQ5W2CcY+kaU/jwHm3XRN035BdS+PYPQnUT66ofhzVMX2cMLINd/+kihKk7twIDAQAB # 支付宝公钥
-  gateway-url: https://openapi-sandbox.dl.alipaydev.com/gateway.do # 沙箱网关
-  return-url: http://localhost:5174/mall/pay/success # 支付成功后跳回前端页面
+  port: 8086
 
 spring:
-  config:
-    import: optional:file:./config/secrets/application-secrets.yaml
   application:
     name: mis-pay
-  # 数据库、Redis、RabbitMQ 配置直接复制 mis-cart 的
+
   rabbitmq:
-    host: localhost
+    host: ${MQ_HOST:rabbitmq}
     port: 5672
     username: ${secrets.rabbitmq.username}
     password: ${secrets.rabbitmq.password}
+
   cloud:
     openfeign:
       client:
         config:
           default:
-            connectTimeout: 2000 # 连接超时 2秒
-            readTimeout: 5000    # 读取超时 5秒
-  # 数据源
+            connectTimeout: 2000
+            readTimeout: 5000
+
   datasource:
-    # 连接池hikari
     type: com.zaxxer.hikari.HikariDataSource
-    # 驱动程序
     driverClassName: com.mysql.cj.jdbc.Driver
-    # 连接参数
-    url: jdbc:mysql://localhost:3306/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
     username: ${secrets.mysql.username}
     password: ${secrets.mysql.password}
     hikari:
-      # 默认是 10，压测时建议调大到 50-100
       maximum-pool-size: 50
-      # 最小空闲连接
       minimum-idle: 10
-      # 缩短最大生命周期，强制回收旧连接
       max-lifetime: 60000
-      # 开启连接保活检测
       keepalive-time: 30000
-      # 验证超时时间
       validation-timeout: 3000
+
   data:
     redis:
-      password: ${secrets.redis.password}
-      host: 127.0.0.1
+      host: ${REDIS_HOST:redis}
       port: 6379
-      timeout: 3000ms      # 连接超时时间
+      password: ${secrets.redis.password}
+      timeout: 3000ms
       lettuce:
         pool:
-          max-active: 10 # 最大连接数
-          max-idle: 10 # 最大空闲连接
-          max-wait: -1ms   # 最大阻塞等待时间
+          max-active: 10
+          max-idle: 10
+          max-wait: -1ms
           min-idle: 1
           time-between-eviction-runs: 10s
+
+alipay:
+  app-id: "9021000159643102"
+  private-key: ${secrets.alipay.private-key}
+  public-key: ${secrets.alipay.public-key}
+  gateway-url: https://openapi-sandbox.dl.alipaydev.com/gateway.do
+  return-url: http://${SERVER_PUBLIC_IP}/mall/pay/success
