@@ -1,32 +1,21 @@
 server:
-  port: 8087 # AI 服务端口
+  port: 8087
 
 spring:
-  config:
-    import: optional:file:./config/secrets/application-secrets.yaml
   application:
     name: mis-ai
-  cloud:
-    nacos:
-      discovery:
-        server-addr: 127.0.0.1:8848
-        ip: 127.0.0.1
+
   data:
     redis:
-      host: 127.0.0.1
+      host: ${REDIS_HOST:redis}
       port: 6379
       password: ${secrets.redis.password}
 
-  # 👇👇👇 Spring AI 配置 👇👇👇
   ai:
     openai:
-      # 填你刚才申请的 Key
       api-key: ${secrets.ai.openai.api-key}
-      # 关键：DeepSeek 的 API 地址
       base-url: https://api.deepseek.com
       chat:
         options:
-          # DeepSeek 的模型名字
           model: deepseek-chat
-          # 温度 (0-1)，越低回答越严谨，越高越发散
           temperature: 0.7
