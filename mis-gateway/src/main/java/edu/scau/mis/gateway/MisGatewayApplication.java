@@ -7,6 +7,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @SpringBootApplication
 @EnableDiscoveryClient
 public class MisGatewayApplication {
+    //测试1
     public static void main(String[] args) {
         SpringApplication.run(MisGatewayApplication.class, args);
     }
