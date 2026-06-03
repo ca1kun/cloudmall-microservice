@@ -172,7 +172,8 @@ public class ProductServiceImpl implements IProductService{
      * @param productId 商品ID
      * @return 命中缓存时返回商品对象，未命中或参数为空时返回 null
      */
-    private Product loadProductFromCache(Long productId) {
+    @Override
+    public Product loadProductFromCache(Long productId) {
         if (productId == null) {
             return null;
         }
@@ -188,7 +189,8 @@ public class ProductServiceImpl implements IProductService{
      *
      * @param product 需要缓存的商品对象，商品ID为空时不写入缓存
      */
-    private void cacheProduct(Product product) {
+    @Override
+    public void cacheProduct(Product product) {
         if (product == null || product.getProductId() == null) {
             return;
         }
@@ -205,7 +207,8 @@ public class ProductServiceImpl implements IProductService{
      *
      * @param productId 商品ID
      */
-    private void clearProductCache(Long productId) {
+    @Override
+    public void clearProductCache(Long productId) {
         if (productId == null) {
             return;
         }
@@ -218,7 +221,8 @@ public class ProductServiceImpl implements IProductService{
      * @param cacheKey 列表缓存业务 key，例如 all、category:1、search:xxx
      * @return 命中缓存时返回商品列表，未命中或参数为空时返回 null
      */
-    private List<Product> loadProductListFromCache(String cacheKey) {
+    @Override
+    public List<Product> loadProductListFromCache(String cacheKey) {
         if (!StringUtils.hasText(cacheKey)) {
             return null;
         }
@@ -235,7 +239,8 @@ public class ProductServiceImpl implements IProductService{
      * @param cacheKey 列表缓存业务 key，例如 all、category:1、search:xxx
      * @param products 需要缓存的商品列表
      */
-    private void cacheProductList(String cacheKey, List<Product> products) {
+    @Override
+    public void cacheProductList(String cacheKey, List<Product> products) {
         if (!StringUtils.hasText(cacheKey) || products == null) {
             return;
         }
@@ -252,7 +257,8 @@ public class ProductServiceImpl implements IProductService{
      *
      * @param cacheKey 列表缓存业务 key
      */
-    private void clearProductListCache(String cacheKey) {
+    @Override
+    public void clearProductListCache(String cacheKey) {
         if (!StringUtils.hasText(cacheKey)) {
             return;
         }
@@ -264,7 +270,8 @@ public class ProductServiceImpl implements IProductService{
      *
      * 备注：用于新增、修改、删除商品后清理列表类缓存，避免旧列表继续返回。
      */
-    private void clearAllProductListCache() {
+    @Override
+    public void clearAllProductListCache() {
         Set<String> keys = stringRedisTemplate.keys(PRODUCT_LIST_KEY_PREFIX + "*");
         if (keys == null || keys.isEmpty()) {
             return;
@@ -278,7 +285,8 @@ public class ProductServiceImpl implements IProductService{
      * @param productId 商品ID
      * @return Redis key
      */
-    private String buildProductDetailKey(Long productId) {
+    @Override
+    public String buildProductDetailKey(Long productId) {
         return PRODUCT_DETAIL_KEY_PREFIX + productId;
     }
 
@@ -288,7 +296,8 @@ public class ProductServiceImpl implements IProductService{
      * @param cacheKey 列表缓存业务 key
      * @return Redis key
      */
-    private String buildProductListKey(String cacheKey) {
+    @Override
+    public String buildProductListKey(String cacheKey) {
         return PRODUCT_LIST_KEY_PREFIX + cacheKey;
     }
 
