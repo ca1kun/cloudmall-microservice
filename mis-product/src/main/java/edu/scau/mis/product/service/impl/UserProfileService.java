@@ -40,7 +40,7 @@ public class UserProfileService {
      */
     public SysUser getProfile() {
         return userMapper.selectById(getCurrentUserId());
-    }
+}
 
     /**
      * 更新基本资料
