@@ -15,7 +15,9 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring-ai.version>1.0.0-M1</spring-ai.version>
+
+        <!-- 建议用 1.1.x，而不是 1.0.0-M1 -->
+        <spring-ai.version>1.1.5</spring-ai.version>
     </properties>
 
     <dependencyManagement>
@@ -31,19 +33,37 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- 1. Web 环境 -->
+        <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- 2. Spring AI OpenAI Starter (DeepSeek 兼容 OpenAI 协议) -->
+        <!-- 如果要做流式 SSE，建议加 WebFlux -->
         <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
 
-        <!-- 3. 公共模块 (Nacos, Utils等) -->
+        <!-- DeepSeek 官方 Starter，替代 OpenAI Starter -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-deepseek</artifactId>
+        </dependency>
+
+        <!-- Redis：先做会话记忆 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- 后面做知识库/RAG时再加这个 -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-vector-store-redis</artifactId>
+        </dependency>
+
+        <!-- 公共模块 -->
         <dependency>
             <groupId>edu.scau.mis</groupId>
             <artifactId>mis-common</artifactId>
@@ -67,29 +87,6 @@
         </plugins>
     </build>
 
-    <!-- ⚠️ 重要：Spring AI 目前在里程碑仓库，必须加这个才能下载到包 -->
-    <repositories>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
 
 </project>
