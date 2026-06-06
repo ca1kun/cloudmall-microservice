@@ -18,7 +18,9 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -47,23 +49,50 @@ public class ProductServiceImpl implements IProductService{
      */
     private static final long PRODUCT_CACHE_TTL = 30;
 
+    /**
+     * 全部商品列表缓存业务 key，对应 Redis key：product:list:all
+     */
+    private static final String ALL_PRODUCT_LIST_CACHE_KEY = "all";
+
     @Override
     public Product getProductById(Long productId) {
+        // First read Redis product detail cache to reduce repeated database queries.
+        Product cachedProduct = loadProductFromCache(productId);
+        if (cachedProduct != null) {
+            log.debug("product detail cache hit, productId={}", productId);
+            return cachedProduct;
+        }
+        // Cache miss: query database and write the product detail back to Redis.
         Product product = productMapper.selectProductById(productId);
-        log.debug("查询商品成功：{}", product);
+        cacheProduct(product);
+        log.debug("query product success: {}", product);
         return product;
     }
 
     @Override
     public Product getProductBySn(String productSn) {
-        return productMapper.selectProductBySn(productSn);
+        Product product = productMapper.selectProductBySn(productSn);
+        // SN query keeps database as source of truth, then warms product detail cache.
+        cacheProduct(product);
+        return product;
     }
-    //查询全部
+
+    // Query all products.
     @Override
     public List<Product> getAllProducts() {
-        return productMapper.selectAllProductList();
+        // All-product query uses a fixed list cache key: product:list:all.
+        List<Product> cachedProducts = loadProductListFromCache(ALL_PRODUCT_LIST_CACHE_KEY);
+        if (cachedProducts != null) {
+            log.debug("all product list cache hit");
+            return cachedProducts;
+        }
+        // Cache miss: query database and write the all-product list back to Redis.
+        List<Product> products = productMapper.selectAllProductList();
+        cacheProductList(ALL_PRODUCT_LIST_CACHE_KEY, products);
+        return products;
     }
-    //根据名称、编码或类别查询
+
+    // Query products by name, SN, or category.
     @Override
     public List<Product> getProducts(Product product) {
         return productMapper.selectProductList(product);
@@ -76,9 +105,15 @@ public class ProductServiceImpl implements IProductService{
             throw new ServiceException(HttpCode.PRODUCT_SN_ALREADY_EXIST);
         }
         product.setCreateTime(new Date());
-        return productMapper.insertProduct(product);
+        int rows = productMapper.insertProduct(product);
+        if (rows > 0) {
+            // New product changes list data, so clear the all-product list cache.
+            clearAllProductListCache();
+            // If the insert fills productId, warm detail cache for immediate reads.
+            cacheProduct(product);
+        }
+        return rows;
     }
-
     @Override
     @Transactional(rollbackFor = Exception.class) // 1. 开启事务，保证数据库操作的原子性
     public int updateProduct(Product product) {
@@ -90,7 +125,7 @@ public class ProductServiceImpl implements IProductService{
         Product oldProduct = productMapper.selectProductById(product.getProductId());
 
         if (oldProduct == null) {
-            throw new ServiceException("商品不存在");
+            throw new ServiceException("\u5546\u54c1\u4e0d\u5b58\u5728");
         }
 
         // 3. 执行数据库更新 (先动数据库！)
@@ -99,6 +134,10 @@ public class ProductServiceImpl implements IProductService{
 
         // 4. 如果数据库更新成功，再去处理图片删除
         if (rows > 0) {
+            // Product update changes detail and list data, so remove stale caches.
+            clearProductCache(product.getProductId());
+            clearAllProductListCache();
+
             String oldImg = oldProduct.getImageUrl(); // 确保你实体类里叫 imageUrl 还是 image
             String newImg = product.getImageUrl();
 
@@ -120,15 +159,28 @@ public class ProductServiceImpl implements IProductService{
 
     @Override
     public int deleteProduct(Long productId) {
-        // 实际项目建议采用逻辑删除，这里为了演示直接物理删除
-        return productMapper.deleteProductById(productId);
+        int rows = productMapper.deleteProductById(productId);
+        if (rows > 0) {
+            // Deleted products must not stay in detail or list cache.
+            clearProductCache(productId);
+            clearAllProductListCache();
+        }
+        return rows;
     }
-
     @Override
     public int deleteProductByIds(Long[] productIds) {
-        return productMapper.deleteProductByIds(productIds);
+        int rows = productMapper.deleteProductByIds(productIds);
+        if (rows > 0) {
+            // Batch delete clears every related detail cache and the all-product list cache.
+            if (productIds != null) {
+                for (Long productId : productIds) {
+                    clearProductCache(productId);
+                }
+            }
+            clearAllProductListCache();
+        }
+        return rows;
     }
-
     @Override
     public List<Product> selectProducts(String productSn, String productName, Long productCategoryId) {
         return List.of();
@@ -138,32 +190,63 @@ public class ProductServiceImpl implements IProductService{
     @Override
     public void lockStock(List<StockLockDTO> list) {
         for (StockLockDTO dto : list) {
-            System.out.println("正在扣减库存: 商品ID=" + dto.getProductId() + ", 扣减数量=" + dto.getCount());
+            System.out.println("lock stock: productId=" + dto.getProductId() + ", count=" + dto.getCount());
             int rows = productMapper.lockStock(dto.getProductId(), dto.getCount());
             if (rows <= 0) {
-                // 如果更新行数为0，说明库存不足
-                throw new ServiceException("商品[" + dto.getProductId() + "]库存不足");
+                throw new ServiceException("\u5546\u54c1[" + dto.getProductId() + "]\u5e93\u5b58\u4e0d\u8db3");
             }
+            // Stock changes make product detail cache stale.
+            clearProductCache(dto.getProductId());
         }
+        // Batch stock changes can affect list stock fields, so clear list cache once.
+        clearAllProductListCache();
     }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void unlockStock(List<StockLockDTO> list) {
         for (StockLockDTO dto : list) {
-            System.out.println("准备回滚库存: ID=" + dto.getProductId() + ", 数量=" + dto.getCount());
+            System.out.println("unlock stock: productId=" + dto.getProductId() + ", count=" + dto.getCount());
             productMapper.unlockStock(dto.getProductId(), dto.getCount());
+            // Stock rollback also makes product detail cache stale.
+            clearProductCache(dto.getProductId());
         }
+        // Batch stock rollback can affect list stock fields, so clear list cache once.
+        clearAllProductListCache();
     }
-
     @Override
     public List<Product> listByIds(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return new ArrayList<>();
         }
-
-        return productMapper.selectBatchIds(ids);
+        List<Long> missedIds = new ArrayList<>();
+        Map<Long, Product> productMap = new HashMap<>();
+        // Read detail cache one by one; only cache misses go to batch database query.
+        for (Long id : ids) {
+            Product cachedProduct = loadProductFromCache(id);
+            if (cachedProduct != null) {
+                productMap.put(id, cachedProduct);
+            } else {
+                missedIds.add(id);
+            }
+        }
+        if (!missedIds.isEmpty()) {
+            List<Product> dbProducts = productMapper.selectBatchIds(missedIds);
+            for (Product product : dbProducts) {
+                cacheProduct(product);
+                productMap.put(product.getProductId(), product);
+            }
+        }
+        List<Product> result = new ArrayList<>();
+        // Return products in the same order as request ids, which is friendlier for cart/order callers.
+        for (Long id : ids) {
+            Product product = productMap.get(id);
+            if (product != null) {
+                result.add(product);
+            }
+        }
+        return result;
     }
-
     // --- 商品缓存辅助方法 ---
 
     /**

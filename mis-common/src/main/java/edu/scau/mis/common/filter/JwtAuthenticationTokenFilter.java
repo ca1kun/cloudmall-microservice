@@ -50,6 +50,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                         url.contains("/v3/api-docs") ||
                         url.contains("/swagger-resources") ||
                         url.contains("/favicon.ico")||
+                        // 放行商品缓存调试接口，便于不带 Token 直接测试缓存读写、删除和 key 构建。
+                        url.startsWith("/product/cache/") ||
                         url.contains("/unlockStock")) {
 
             // 直接放行，return 结束当前过滤器的逻辑

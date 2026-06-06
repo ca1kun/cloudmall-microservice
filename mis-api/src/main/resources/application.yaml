@@ -6,8 +6,8 @@ server:
 spring:
   application:
     name: mis-api
-  config:
-    import: file:D:/IDEA/workspace/demo/isdp/isdp-boot3Plus/config/secrets/application-secrets.yaml
+#  config:
+#    import: file:D:/IDEA/workspace/demo/isdp/isdp-boot3Plus/config/secrets/application-secrets.yaml
 
   profiles:
     active: dev

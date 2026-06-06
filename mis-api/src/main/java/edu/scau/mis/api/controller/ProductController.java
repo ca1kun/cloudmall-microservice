@@ -123,6 +123,8 @@ public class ProductController {
         return ApiResult.success(list);
     }
 
+
+//    ------------------------------------------------------------------------------------------------------------------------------------------------------------------
     /**
      * 从 Redis 中读取指定商品详情缓存。
      *
@@ -165,12 +167,14 @@ public class ProductController {
     /**
      * 从 Redis 中读取指定业务 key 对应的商品列表缓存。
      *
-     * @param cacheKey 列表缓存业务 key，例如 all、category:1、search:xxx
+     * @param productId 商品ID，前端按商品维度读取列表缓存时传入
      * @return 缓存命中时返回商品列表，未命中时返回无内容响应
      */
     @Operation(summary = "读取商品列表缓存")
     @GetMapping("/cache/list")
-    public ApiResult<List<Product>> loadProductListCache(@RequestParam("cacheKey") String cacheKey) {
+    public ApiResult<List<Product>> loadProductListCache(@RequestParam("productId") Long productId) {
+        // 前端只需要传商品ID，后端内部统一转换为列表缓存业务 key，避免前端感知 Redis key 规则。
+        String cacheKey = String.valueOf(productId);
         List<Product> products = productService.loadProductListFromCache(cacheKey);
         return products == null || products.isEmpty() ? ApiResult.noContent() : ApiResult.success(products);
     }
@@ -185,8 +189,10 @@ public class ProductController {
     @Operation(summary = "写入商品列表缓存")
     @PostMapping("/cache/list")
     public ApiResult<String> cacheProductList(
-            @RequestParam("cacheKey") String cacheKey,
+            @RequestParam("productId") Long productId,
             @RequestBody List<Product> products) {
+        // 对外接口统一接收商品ID，内部转为列表缓存业务 key 复用原有缓存方法。
+        String cacheKey = String.valueOf(productId);
         productService.cacheProductList(cacheKey, products);
         return ApiResult.success("商品列表缓存写入成功");
     }
@@ -194,12 +200,14 @@ public class ProductController {
     /**
      * 删除指定业务 key 对应的商品列表缓存。
      *
-     * @param cacheKey 列表缓存业务 key
+     * @param productId 商品ID
      * @return 删除结果提示
      */
     @Operation(summary = "删除商品列表缓存")
     @DeleteMapping("/cache/list")
-    public ApiResult<String> clearProductListCache(@RequestParam("cacheKey") String cacheKey) {
+    public ApiResult<String> clearProductListCache(@RequestParam("productId") Long productId) {
+        // 对外接口统一接收商品ID，内部转为列表缓存业务 key 复用原有缓存方法。
+        String cacheKey = String.valueOf(productId);
         productService.clearProductListCache(cacheKey);
         return ApiResult.success("商品列表缓存删除成功");
     }
@@ -233,12 +241,14 @@ public class ProductController {
     /**
      * 构建商品列表缓存 key，便于前端或调试工具确认 Redis key。
      *
-     * @param cacheKey 列表缓存业务 key
+     * @param productId 商品ID
      * @return 商品列表缓存 key
      */
     @Operation(summary = "构建商品列表缓存key")
     @GetMapping("/cache/key/list")
-    public ApiResult<String> buildProductListCacheKey(@RequestParam("cacheKey") String cacheKey) {
+    public ApiResult<String> buildProductListCacheKey(@RequestParam("productId") Long productId) {
+        // 对外接口统一接收商品ID，内部转为列表缓存业务 key 复用原有缓存方法。
+        String cacheKey = String.valueOf(productId);
         return ApiResult.success(productService.buildProductListKey(cacheKey));
     }
 }
