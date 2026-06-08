@@ -32,7 +32,7 @@ spring:
         - id: mis-api-route
           uri: lb://mis-api
           predicates:
-            - Path=/api/product/**,/api/category/**,/api/sale/**,/api/system/user/profile/**,/api/common/**,/api/,/api
+            - Path=/api/product/**,/api/category/**,/api/sale/**,/api/system/user/profile/**,/api/common/**,/api/,/api,/api/system/address/**
           filters:
             - StripPrefix=1
 
@@ -46,7 +46,7 @@ spring:
         - id: mis-order-route
           uri: lb://mis-order
           predicates:
-            - Path=/api/order/**
+            - Path=/api/order/**,/api/merchant/orders/**,/api/mall/orders/**
           filters:
             - StripPrefix=1
 

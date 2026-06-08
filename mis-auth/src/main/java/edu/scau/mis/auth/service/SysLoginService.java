@@ -13,6 +13,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import com.aliyun.dypnsapi20170525.Client;
+import com.aliyun.dypnsapi20170525.models.SendSmsVerifyCodeRequest;
+import com.aliyun.dypnsapi20170525.models.SendSmsVerifyCodeResponse;
+import com.aliyun.dypnsapi20170525.models.CheckSmsVerifyCodeRequest;
+import com.aliyun.dypnsapi20170525.models.CheckSmsVerifyCodeResponse;
+import edu.scau.mis.auth.config.AliyunPnvsProperties;
+
 import edu.scau.mis.auth.dto.LoginDTO;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +30,13 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class SysLoginService {
+
+
+    @Autowired
+    private Client aliyunPnvsClient;
+
+    @Autowired
+    private AliyunPnvsProperties aliyunPnvsProperties;
 
     @Autowired
     private IUserMapper userMapper;
@@ -36,33 +51,47 @@ public class SysLoginService {
     private static final String CAPTCHA_KEY_PREFIX = "captcha:";
 
     /**
-     * 发送验证码
+     * 发送验证码：使用阿里云短信认证服务
      */
     public void sendCode(String phone) {
-        // 1. 简单校验手机号格式 (这里简单判断长度，生产环境用正则)
-        if (!StringUtils.hasText(phone) || phone.length() != 11) {
-            throw new RuntimeException("手机号格式不正确");
+        if (!StringUtils.hasText(phone) || !phone.matches("^1[3-9]\\d{9}$")) {
+            throw new ServiceException("手机号格式不正确");
         }
 
-        // 2. 防刷校验：检查 Redis 里是否还有未过期的验证码
-        // 你的需求是 1 分钟过期，如果这就意味着 60s 内不允许重发
-        String key = CAPTCHA_KEY_PREFIX + phone;
-        if (redisCache.getCacheObject(key) != null) {
-            throw new RuntimeException("验证码发送太频繁，请稍后再试");
+        try {
+            SendSmsVerifyCodeRequest request = new SendSmsVerifyCodeRequest()
+                    .setPhoneNumber(phone)
+                    .setCountryCode("86")
+                    .setSignName(aliyunPnvsProperties.getSignName())
+                    .setTemplateCode(aliyunPnvsProperties.getTemplateCode())
+                    .setSchemeName(aliyunPnvsProperties.getSchemeName())
+                    // 这里让阿里云生成验证码，后面才能用 CheckSmsVerifyCode 校验
+                    .setTemplateParam("{\"code\":\"##code##\",\"min\":\"1\"}")
+                    .setCodeLength(Long.valueOf(aliyunPnvsProperties.getCodeLength()))
+                    .setValidTime(Long.valueOf(aliyunPnvsProperties.getValidTime()))
+                    .setInterval(Long.valueOf(aliyunPnvsProperties.getInterval()))
+                    .setCodeType(1L)
+                    .setDuplicatePolicy(1L);
+
+            SendSmsVerifyCodeResponse response = aliyunPnvsClient.sendSmsVerifyCode(request);
+
+            if (response == null || response.getBody() == null) {
+                throw new ServiceException("验证码发送失败：阿里云无响应");
+            }
+
+            String resultCode = response.getBody().getCode();
+            Boolean success = response.getBody().getSuccess();
+            String message = response.getBody().getMessage();
+
+            if (!"OK".equals(resultCode) || !Boolean.TRUE.equals(success)) {
+                throw new ServiceException("验证码发送失败：" + message);
+            }
+
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ServiceException("验证码发送异常：" + e.getMessage());
         }
-
-        // 3. 生成 6 位随机数
-        String code = String.valueOf(new Random().nextInt(899999) + 100000);
-
-        // 4. 存入 Redis，有效期 60 秒
-        redisCache.setCacheObject(key, code, 60, TimeUnit.SECONDS);
-
-        // 5. 模拟发送短信 (生产环境调用阿里云/腾讯云 API)
-        System.out.println("====== 【短信网关】 ======");
-        System.out.println("发送给: " + phone);
-        System.out.println("验证码: " + code);
-        System.out.println("有效期: 60秒");
-        System.out.println("========================");
     }
 
     /**
@@ -76,17 +105,47 @@ public class SysLoginService {
             String phone = loginBody.getPhone();
             String code = loginBody.getCode();
 
-            // 1. 校验验证码
-            String cacheCode = redisCache.getCacheObject(CAPTCHA_KEY_PREFIX + phone);
-            if (cacheCode == null) {
-                throw new RuntimeException("验证码已失效，请重新发送");
+            // 1. 校验手机号和验证码
+            if (!StringUtils.hasText(phone) || !phone.matches("^1[3-9]\\d{9}$")) {
+                throw new ServiceException("手机号格式不正确");
             }
-            if (!code.equals(cacheCode)) {
-                throw new RuntimeException("验证码错误");
+            if (!StringUtils.hasText(code)) {
+                throw new ServiceException("验证码不能为空");
             }
 
-            // 2. 验证通过，删除验证码（防止二次使用）
-            redisCache.deleteObject(CAPTCHA_KEY_PREFIX + phone);
+            try {
+                CheckSmsVerifyCodeRequest checkRequest = new CheckSmsVerifyCodeRequest()
+                        .setPhoneNumber(phone)
+                        .setCountryCode("86")
+                        .setSchemeName(aliyunPnvsProperties.getSchemeName())
+                        .setVerifyCode(code);
+
+                CheckSmsVerifyCodeResponse checkResponse = aliyunPnvsClient.checkSmsVerifyCode(checkRequest);
+
+                if (checkResponse == null || checkResponse.getBody() == null) {
+                    throw new ServiceException("验证码校验失败：阿里云无响应");
+                }
+
+                String resultCode = checkResponse.getBody().getCode();
+                Boolean success = checkResponse.getBody().getSuccess();
+
+                if (!"OK".equals(resultCode) || !Boolean.TRUE.equals(success)) {
+                    throw new ServiceException("验证码校验失败：" + checkResponse.getBody().getMessage());
+                }
+
+                String verifyResult = checkResponse.getBody().getModel() == null
+                        ? null
+                        : checkResponse.getBody().getModel().getVerifyResult();
+
+                if (!"PASS".equals(verifyResult)) {
+                    throw new ServiceException("验证码错误或已失效");
+                }
+
+            } catch (ServiceException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new ServiceException("验证码校验异常：" + e.getMessage());
+            }
 
             // 3. 查库：根据手机号查用户
             LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
