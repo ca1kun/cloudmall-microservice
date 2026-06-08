@@ -28,3 +28,13 @@ mybatis-plus:
   type-aliases-package: edu.scau.mis.common.domain
   configuration:
     map-underscore-to-camel-case: true
+
+aliyun:
+  pnvs:
+    endpoint: dypnsapi.aliyuncs.com
+    sign-name: 速通互联验证码
+    template-code: 100001
+    scheme-name: 默认方案
+    code-length: 6
+    valid-time: 60
+    interval: 60
