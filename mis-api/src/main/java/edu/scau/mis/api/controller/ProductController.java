@@ -25,36 +25,46 @@ import java.util.List;
 public class ProductController {
     @Autowired
     private IProductService productService;
+
     @Operation(summary = "根据ID查询商品")
     @GetMapping("/{productId}")
     @ApiResponse(responseCode = "200", description = "查询商品成功", content = @Content(schema = @Schema(implementation = Product.class)))
     public ApiResult<Product> getById(
             @Parameter(description = "商品ID", in = ParameterIn.PATH, required = true)
-            @PathVariable("productId") Long productId){
+            @PathVariable("productId") Long productId) {
         Product product = productService.getProductById(productId);
         return product == null ? ApiResult.noContent() : ApiResult.success(product);
     }
+
     @Operation(summary = "根据编号查询商品")
     @GetMapping("/getBySn/{productSn}")
-    public ApiResult<Product> getBySn(@PathVariable("productSn") String productSn){
+    public ApiResult<Product> getBySn(@PathVariable("productSn") String productSn) {
         Product product = productService.getProductBySn(productSn);
         return product == null ? ApiResult.noContent() : ApiResult.success(product);
     }
 
     @Operation(summary = "查询所有商品")
     @GetMapping("/listAll")
-    public ApiResult<List<Product>> listAll(){
+    public ApiResult<List<Product>> listAll() {
         List<Product> products = productService.getAllProducts();
         return products.isEmpty() ? ApiResult.noContent() : ApiResult.success(products);
     }
 
     @Operation(summary = "根据参数查询商品")
     @GetMapping("/listByParams")
-    public ApiResult<List<Product>> listByParams(Product product){
+    public ApiResult<List<Product>> listByParams(Product product) {
+        // Codex added: keep request params unchanged and build a Redis list cache key from query fields.
+        String cacheKey = buildProductParamsCacheKey(product);
+        List<Product> cachedProducts = productService.loadProductListFromCache(cacheKey);
+        if (cachedProducts != null) {
+            return cachedProducts.isEmpty() ? ApiResult.noContent() : ApiResult.success(cachedProducts);
+        }
+
+        // Codex added: on cache miss, query database and write result list to Redis.
         List<Product> products = productService.getProducts(product);
+        productService.cacheProductList(cacheKey, products);
         return products.isEmpty() ? ApiResult.noContent() : ApiResult.success(products);
     }
-
     @Operation(summary = "分页查询商品")
     @GetMapping("/page")
     public ApiResult listByPage(
@@ -68,6 +78,7 @@ public class ProductController {
             product.setProductCategoryId(categoryId);
         }
 
+        // Codex note: keep page params unchanged; service list cache is not used here to keep PageInfo accurate.
         PageHelper.startPage(pageNum, pageSize);
         List<Product> productList = productService.getProducts(product);
         PageInfo<Product> pageInfo = new PageInfo<>(productList);
@@ -76,40 +87,44 @@ public class ProductController {
 
     @Operation(summary = "新增商品")
     @PostMapping("/add")
-    public ApiResult<String> add(@RequestBody Product  product){
+    public ApiResult<String> add(@RequestBody Product product) {
         int rows = productService.addProduct(product);
         return rows > 0 ? ApiResult.success("添加成功") : ApiResult.fail("添加失败");
     }
 
     @Operation(summary = "修改商品")
     @PutMapping("/update")
-    public ApiResult<String> update(@RequestBody Product product){
+    public ApiResult<String> update(@RequestBody Product product) {
         int rows = productService.updateProduct(product);
         return rows > 0 ? ApiResult.success("修改成功") : ApiResult.fail("修改失败");
     }
+
     @Operation(summary = "删除商品")
     @DeleteMapping("/delete/{productId}")
-    public ApiResult<String> delete(@PathVariable("productId") Long productId){
+    public ApiResult<String> delete(@PathVariable("productId") Long productId) {
         int rows = productService.deleteProduct(productId);
         return rows > 0 ? ApiResult.success("删除成功") : ApiResult.fail("删除失败");
     }
 
     @Operation(summary = "批量删除商品")
     @DeleteMapping("/deleteByIds/{productIds}")
-    public ApiResult<String> deleteByIds(@PathVariable Long[] productIds){
+    public ApiResult<String> deleteByIds(@PathVariable Long[] productIds) {
         int rows = productService.deleteProductByIds(productIds);
-        return productIds.length == rows? ApiResult.success("批量删除成功") : ApiResult.fail("批量删除失败");
+        return productIds.length == rows ? ApiResult.success("批量删除成功") : ApiResult.fail("批量删除失败");
     }
+
     @PostMapping("/lockStock") // 完整路径 /product/lockStock
     public ApiResult<String> lockStock(@RequestBody List<StockLockDTO> list) {
         productService.lockStock(list);
         return ApiResult.success("锁定库存成功");
     }
+
     @PostMapping("/unlockStock")
     public ApiResult<String> unlockStock(@RequestBody List<StockLockDTO> list) {
         productService.unlockStock(list);
         return ApiResult.success("库存恢复成功");
     }
+
     /**
      * 批量查询商品信息 (供 mis-cart 使用)
      * POST /item/product/list/ids
@@ -119,136 +134,22 @@ public class ProductController {
         if (ids == null || ids.isEmpty()) {
             return ApiResult.success(new ArrayList<>());
         }
+        // Codex added: keep request body unchanged; productService.listByIds reads/writes detail cache internally.
         List<Product> list = productService.listByIds(ids);
         return ApiResult.success(list);
     }
 
 
-//    ------------------------------------------------------------------------------------------------------------------------------------------------------------------
     /**
-     * 从 Redis 中读取指定商品详情缓存。
+     * Codex added: build the list cache key for listByParams without changing API parameters.
      *
-     * @param productId 商品ID
-     * @return 缓存命中时返回商品详情，未命中时返回无内容响应
+     * @param product existing query object bound by Spring MVC
+     * @return product list cache business key
      */
-    @Operation(summary = "读取商品详情缓存")
-    @GetMapping("/cache/detail/{productId}")
-    public ApiResult<Product> loadProductCache(@PathVariable("productId") Long productId) {
-        Product product = productService.loadProductFromCache(productId);
-        return product == null ? ApiResult.noContent() : ApiResult.success(product);
-    }
-
-    /**
-     * 将商品详情写入 Redis 缓存。
-     *
-     * @param product 需要写入缓存的商品对象
-     * @return 写入结果提示
-     */
-    @Operation(summary = "写入商品详情缓存")
-    @PostMapping("/cache/detail")
-    public ApiResult<String> cacheProduct(@RequestBody Product product) {
-        productService.cacheProduct(product);
-        return ApiResult.success("商品详情缓存写入成功");
-    }
-
-    /**
-     * 删除指定商品详情缓存。
-     *
-     * @param productId 商品ID
-     * @return 删除结果提示
-     */
-    @Operation(summary = "删除商品详情缓存")
-    @DeleteMapping("/cache/detail/{productId}")
-    public ApiResult<String> clearProductCache(@PathVariable("productId") Long productId) {
-        productService.clearProductCache(productId);
-        return ApiResult.success("商品详情缓存删除成功");
-    }
-
-    /**
-     * 从 Redis 中读取指定业务 key 对应的商品列表缓存。
-     *
-     * @param productId 商品ID，前端按商品维度读取列表缓存时传入
-     * @return 缓存命中时返回商品列表，未命中时返回无内容响应
-     */
-    @Operation(summary = "读取商品列表缓存")
-    @GetMapping("/cache/list")
-    public ApiResult<List<Product>> loadProductListCache(@RequestParam("productId") Long productId) {
-        // 前端只需要传商品ID，后端内部统一转换为列表缓存业务 key，避免前端感知 Redis key 规则。
-        String cacheKey = String.valueOf(productId);
-        List<Product> products = productService.loadProductListFromCache(cacheKey);
-        return products == null || products.isEmpty() ? ApiResult.noContent() : ApiResult.success(products);
-    }
-
-    /**
-     * 将商品列表写入 Redis 缓存。
-     *
-     * @param cacheKey 列表缓存业务 key，例如 all、category:1、search:xxx
-     * @param products 需要写入缓存的商品列表
-     * @return 写入结果提示
-     */
-    @Operation(summary = "写入商品列表缓存")
-    @PostMapping("/cache/list")
-    public ApiResult<String> cacheProductList(
-            @RequestParam("productId") Long productId,
-            @RequestBody List<Product> products) {
-        // 对外接口统一接收商品ID，内部转为列表缓存业务 key 复用原有缓存方法。
-        String cacheKey = String.valueOf(productId);
-        productService.cacheProductList(cacheKey, products);
-        return ApiResult.success("商品列表缓存写入成功");
-    }
-
-    /**
-     * 删除指定业务 key 对应的商品列表缓存。
-     *
-     * @param productId 商品ID
-     * @return 删除结果提示
-     */
-    @Operation(summary = "删除商品列表缓存")
-    @DeleteMapping("/cache/list")
-    public ApiResult<String> clearProductListCache(@RequestParam("productId") Long productId) {
-        // 对外接口统一接收商品ID，内部转为列表缓存业务 key 复用原有缓存方法。
-        String cacheKey = String.valueOf(productId);
-        productService.clearProductListCache(cacheKey);
-        return ApiResult.success("商品列表缓存删除成功");
-    }
-
-    /**
-     * 删除全部商品列表缓存。
-     *
-     * 备注：用于新增、修改、删除商品后手动清理列表类缓存，避免旧列表继续返回。
-     *
-     * @return 清理结果提示
-     */
-    @Operation(summary = "清空全部商品列表缓存")
-    @DeleteMapping("/cache/list/all")
-    public ApiResult<String> clearAllProductListCache() {
-        productService.clearAllProductListCache();
-        return ApiResult.success("全部商品列表缓存清理成功");
-    }
-
-    /**
-     * 构建商品详情缓存 key，便于前端或调试工具确认 Redis key。
-     *
-     * @param productId 商品ID
-     * @return 商品详情缓存 key
-     */
-    @Operation(summary = "构建商品详情缓存key")
-    @GetMapping("/cache/key/detail/{productId}")
-    public ApiResult<String> buildProductDetailCacheKey(@PathVariable("productId") Long productId) {
-        return ApiResult.success(productService.buildProductDetailKey(productId));
-    }
-
-    /**
-     * 构建商品列表缓存 key，便于前端或调试工具确认 Redis key。
-     *
-     * @param productId 商品ID
-     * @return 商品列表缓存 key
-     */
-    @Operation(summary = "构建商品列表缓存key")
-    @GetMapping("/cache/key/list")
-    public ApiResult<String> buildProductListCacheKey(@RequestParam("productId") Long productId) {
-        // 对外接口统一接收商品ID，内部转为列表缓存业务 key 复用原有缓存方法。
-        String cacheKey = String.valueOf(productId);
-        return ApiResult.success(productService.buildProductListKey(cacheKey));
+    private String buildProductParamsCacheKey(Product product) {
+        String productSn = product == null || product.getProductSn() == null ? "" : product.getProductSn().trim();
+        String productName = product == null || product.getProductName() == null ? "" : product.getProductName().trim();
+        Long categoryId = product == null ? null : product.getProductCategoryId();
+        return "params:sn=" + productSn + ":name=" + productName + ":category=" + (categoryId == null ? "" : categoryId);
     }
 }
