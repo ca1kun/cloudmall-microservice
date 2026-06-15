@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="edu.scau.mis.product.mapper.IDashboardMapper">
+
+    <!-- Codex added: 已成交订单状态集合，兼容当前项目枚举的小写状态。 -->
+    <sql id="paidSaleStatusCondition">
+        s.status in ('paid', 'completed', 'delivered')
+    </sql>
+
+    <!-- Codex added: 查询已成交总销售额。 -->
+    <select id="selectTotalSales" resultType="java.math.BigDecimal">
+        select coalesce(sum(s.total), 0)
+        from pos_sale s
+        where <include refid="paidSaleStatusCondition"/>
+    </select>
+
+    <!-- Codex added: 查询指定时间范围内销售额。 -->
+    <select id="selectSalesBetween" resultType="java.math.BigDecimal">
+        select coalesce(sum(s.total), 0)
+        from pos_sale s
+        where <include refid="paidSaleStatusCondition"/>
+          and s.sale_time &gt;= #{startTime}
+          and s.sale_time &lt; #{endTime}
+    </select>
+
+    <!-- Codex added: 查询指定时间范围内订单数。 -->
+    <select id="countOrdersBetween" resultType="java.lang.Integer">
+        select count(1)
+        from pos_sale s
+        where <include refid="paidSaleStatusCondition"/>
+          and s.sale_time &gt;= #{startTime}
+          and s.sale_time &lt; #{endTime}
+    </select>
+
+    <!-- Codex added: 当前项目无访客表，用订单创建人近 24 小时去重统计活跃用户。 -->
+    <select id="countActiveUsersSince" resultType="java.lang.Integer">
+        select count(distinct coalesce(nullif(s.create_by, ''), s.sale_no))
+        from pos_sale s
+        where s.sale_time &gt;= #{startTime}
+    </select>
+
+    <!-- Codex added: 当前项目无上下架字段，用 stock > 0 作为在售商品判断。 -->
+    <select id="countAvailableProducts" resultType="java.lang.Integer">
+        select count(1)
+        from pos_product p
+        where coalesce(p.stock, 0) &gt; 0
+    </select>
+
+    <!-- Codex added: 按天聚合销售额和订单数。 -->
+    <select id="selectTrend" resultType="edu.scau.mis.common.vo.dashboard.TrendPointVo">
+        select
+            date_format(s.sale_time, '%Y-%m-%d') as dateLabel,
+            coalesce(sum(s.total), 0) as sales,
+            count(1) as orders
+        from pos_sale s
+        where <include refid="paidSaleStatusCondition"/>
+          and s.sale_time &gt;= #{startTime}
+          and s.sale_time &lt; #{endTime}
+        group by date_format(s.sale_time, '%Y-%m-%d')
+        order by dateLabel asc
+    </select>
+
+    <!-- Codex added: 按商品分类聚合销量，service 层再换算百分比。 -->
+    <select id="selectCategorySalesShare" resultType="edu.scau.mis.common.vo.dashboard.NameValueItemVo">
+        select
+            coalesce(c.category_name, '未分类') as name,
+            coalesce(sum(si.quantity), 0) as value
+        from pos_sale_item si
+            inner join pos_sale s on s.sale_id = si.sale_id
+            left join pos_product p on p.product_id = si.product_id
+            left join pos_category c on c.category_id = p.product_category_id
+        where <include refid="paidSaleStatusCondition"/>
+        group by coalesce(c.category_name, '未分类')
+        order by value desc
+    </select>
+
+    <!-- Codex added: 当前销售系统是 POS 场景，渠道用线下 POS 聚合真实订单数。 -->
+    <select id="countPosChannelOrders" resultType="java.lang.Integer">
+        select count(1)
+        from pos_sale s
+        where <include refid="paidSaleStatusCondition"/>
+          and s.sale_time &gt;= #{startTime}
+          and s.sale_time &lt; #{endTime}
+    </select>
+
+    <!-- Codex added: 热销商品排行，从订单明细汇总销量。 -->
+    <select id="selectTopProducts" resultType="edu.scau.mis.common.vo.dashboard.TopProductItemVo">
+        select
+            si.product_name as name,
+            coalesce(sum(si.quantity), 0) as count
+        from pos_sale_item si
+            inner join pos_sale s on s.sale_id = si.sale_id
+        where <include refid="paidSaleStatusCondition"/>
+          and s.sale_time &gt;= #{startTime}
+          and s.sale_time &lt; #{endTime}
+        group by si.product_id, si.product_name
+        order by count desc
+        limit #{limit}
+    </select>
+
+    <!-- Codex added: 最新订单列表，从销售订单表读取。 -->
+    <select id="selectRecentOrders" resultType="edu.scau.mis.common.vo.dashboard.RecentOrderItemVo">
+        select
+            s.sale_no as orderNo,
+            coalesce(nullif(s.create_by, ''), '客户') as customer,
+            coalesce(s.total, 0) as amount,
+            s.status as status,
+            date_format(coalesce(s.sale_time, s.create_time), '%Y-%m-%d %H:%i:%s') as createTime
+        from pos_sale s
+        order by coalesce(s.sale_time, s.create_time) desc
+        limit #{limit}
+    </select>
+</mapper>
