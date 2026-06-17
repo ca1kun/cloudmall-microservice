@@ -38,6 +38,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                  // 放行库存回滚接口 (仅供内部调用)
                  .requestMatchers("/product/unlockStock").permitAll()
+                 .requestMatchers("/pay/success").permitAll()
+                 .requestMatchers("/mall/pay/success").permitAll()
                  // 放行商品缓存调试接口，便于在 Apifox 中直接测试缓存读写、删除和 key 构建。
                  .requestMatchers("/product/**").permitAll()
                  .requestMatchers("/merchant/dashboard/**").permitAll()

@@ -12,8 +12,9 @@ public interface SmsCouponMapper extends BaseMapper<SmsCoupon> {
      * 扣减库存 (关键：在 SQL 里判断 count > 0)
      *
      * @param id 优惠券ID
+     * @return
      */
     @Update("UPDATE sms_coupon SET count = count - 1 WHERE id = #{id} AND count > 0")
-    void decreaseStock(@Param("id") Long id);
+    int decreaseStock(@Param("id") Long id);
 
 }

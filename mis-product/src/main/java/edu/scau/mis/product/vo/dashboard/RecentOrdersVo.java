@@ -1,4 +1,4 @@
-package edu.scau.mis.common.vo.dashboard;
+package edu.scau.mis.product.vo.dashboard;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -8,12 +8,12 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * Codex added: 热销商品排行返回对象。
+ * Codex added: 最新订单返回对象。
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "热销商品排行")
-public class TopProductsVo {
-    private List<TopProductItemVo> list;
+@Schema(description = "最新订单")
+public class RecentOrdersVo {
+    private List<RecentOrderItemVo> list;
 }

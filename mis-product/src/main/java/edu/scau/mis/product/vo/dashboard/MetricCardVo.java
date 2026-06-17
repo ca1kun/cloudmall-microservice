@@ -1,4 +1,4 @@
-package edu.scau.mis.common.vo.dashboard;
+package edu.scau.mis.product.vo.dashboard;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

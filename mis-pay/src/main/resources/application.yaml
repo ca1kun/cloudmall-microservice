@@ -46,9 +46,12 @@ spring:
           min-idle: 1
           time-between-eviction-runs: 10s
 
+mall:
+  frontend-base-url: http://${SERVER_PUBLIC_IP}
+
 alipay:
   app-id: "9021000159643102"
   private-key: ${secrets.alipay.private-key}
   public-key: ${secrets.alipay.public-key}
   gateway-url: https://openapi-sandbox.dl.alipaydev.com/gateway.do
-  return-url: http://${SERVER_PUBLIC_IP}/mall/pay/success
+  return-url: http://${SERVER_PUBLIC_IP}/api/pay/success

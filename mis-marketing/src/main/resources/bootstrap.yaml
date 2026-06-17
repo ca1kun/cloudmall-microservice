@@ -1,7 +1,13 @@
 spring:
   config:
-    import: optional:classpath:application-secrets.yaml
+    import: optional:file:/config/secrets/application-secrets.yaml
+
   cloud:
     nacos:
+      server-addr: ${NACOS_ADDR:nacos:8848}
+
       discovery:
-        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        server-addr: ${NACOS_ADDR:nacos:8848}
+
+      config:
+        server-addr: ${NACOS_ADDR:nacos:8848}

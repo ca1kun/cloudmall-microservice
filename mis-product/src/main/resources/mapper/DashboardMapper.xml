@@ -48,8 +48,8 @@
         where coalesce(p.stock, 0) &gt; 0
     </select>
 
-    <!-- Codex fixed: daily trend from mall orders. -->
-    <select id="selectTrend" resultType="edu.scau.mis.common.vo.dashboard.TrendPointVo">
+    <!-- Codex added: 按天聚合销售额和订单数。 -->
+    <select id="selectTrend" resultType="edu.scau.mis.product.vo.dashboard.TrendPointVo">
         select
             date_format(o.create_time, '%Y-%m-%d') as dateLabel,
             coalesce(sum(o.pay_amount), 0) as sales,
@@ -62,8 +62,8 @@
         order by dateLabel asc
     </select>
 
-    <!-- Codex fixed: category share from mall order items and product category. -->
-    <select id="selectCategorySalesShare" resultType="edu.scau.mis.common.vo.dashboard.NameValueItemVo">
+    <!-- Codex added: 按商品分类聚合销量，service 层再换算百分比。 -->
+    <select id="selectCategorySalesShare" resultType="edu.scau.mis.product.vo.dashboard.NameValueItemVo">
         select
             coalesce(c.category_name, 'Uncategorized') as name,
             coalesce(sum(oi.product_quantity), 0) as value
@@ -84,8 +84,8 @@
           and o.create_time &lt; #{endTime}
     </select>
 
-    <!-- Codex fixed: top products from mall order items. -->
-    <select id="selectTopProducts" resultType="edu.scau.mis.common.vo.dashboard.TopProductItemVo">
+    <!-- Codex added: 热销商品排行，从订单明细汇总销量。 -->
+    <select id="selectTopProducts" resultType="edu.scau.mis.product.vo.dashboard.TopProductItemVo">
         select
             oi.product_name as name,
             coalesce(sum(oi.product_quantity), 0) as count
@@ -99,8 +99,8 @@
         limit #{limit}
     </select>
 
-    <!-- Codex fixed: recent orders from mall order table. -->
-    <select id="selectRecentOrders" resultType="edu.scau.mis.common.vo.dashboard.RecentOrderItemVo">
+    <!-- Codex added: 最新订单列表，从销售订单表读取。 -->
+    <select id="selectRecentOrders" resultType="edu.scau.mis.product.vo.dashboard.RecentOrderItemVo">
         select
             o.order_sn as orderNo,
             coalesce(nullif(o.member_username, ''), 'Customer') as customer,

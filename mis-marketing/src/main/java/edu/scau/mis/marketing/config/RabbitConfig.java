@@ -1,25 +1,56 @@
 package edu.scau.mis.marketing.config;
 
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter; // 👈 导入这个
-import org.springframework.amqp.support.converter.MessageConverter; // 👈 导入这个
+import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
 
+    public static final String COUPON_EXCHANGE = "coupon.exchange";
     public static final String COUPON_QUEUE = "coupon.queue";
+    public static final String COUPON_ROUTING_KEY = "coupon.seckill";
+
+    public static final String COUPON_DLX_EXCHANGE = "coupon.dlx.exchange";
+    public static final String COUPON_DLX_QUEUE = "coupon.dlx.queue";
+    public static final String COUPON_DLX_ROUTING_KEY = "coupon.dlx";
+
+    @Bean
+    public DirectExchange couponExchange() {
+        return new DirectExchange(COUPON_EXCHANGE, true, false);
+    }
 
     @Bean
     public Queue couponQueue() {
-        return new Queue(COUPON_QUEUE, true);
+        return QueueBuilder.durable(COUPON_QUEUE)
+                .deadLetterExchange(COUPON_DLX_EXCHANGE)
+                .deadLetterRoutingKey(COUPON_DLX_ROUTING_KEY)
+                .build();
     }
 
-    // 👇👇👇 【核心修复】添加这个 Bean 👇👇👇
-    // 这会让 RabbitMQ 发送和接收时都使用 JSON 格式，而不是 Java 二进制
     @Bean
-    public MessageConverter messageConverter() {
-        return new Jackson2JsonMessageConverter();
+    public Binding couponBinding() {
+        return BindingBuilder
+                .bind(couponQueue())
+                .to(couponExchange())
+                .with(COUPON_ROUTING_KEY);
+    }
+
+    @Bean
+    public DirectExchange couponDlxExchange() {
+        return new DirectExchange(COUPON_DLX_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public Queue couponDlxQueue() {
+        return QueueBuilder.durable(COUPON_DLX_QUEUE).build();
+    }
+
+    @Bean
+    public Binding couponDlxBinding() {
+        return BindingBuilder
+                .bind(couponDlxQueue())
+                .to(couponDlxExchange())
+                .with(COUPON_DLX_ROUTING_KEY);
     }
 }

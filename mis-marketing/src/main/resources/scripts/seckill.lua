@@ -2,7 +2,7 @@ local stockKey = KEYS[1]
 local userHistoryKey = KEYS[2]
 local userId = ARGV[1]
 
--- 1. 校验是否重复领取
+---- 1. 校验是否重复领取
 if redis.call('sismember', userHistoryKey, userId) == 1 then
     return -1
 end

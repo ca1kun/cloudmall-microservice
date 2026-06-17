@@ -1,9 +1,9 @@
 package edu.scau.mis.product.mapper;
 
-import edu.scau.mis.common.vo.dashboard.NameValueItemVo;
-import edu.scau.mis.common.vo.dashboard.RecentOrderItemVo;
-import edu.scau.mis.common.vo.dashboard.TopProductItemVo;
-import edu.scau.mis.common.vo.dashboard.TrendPointVo;
+import edu.scau.mis.product.vo.dashboard.NameValueItemVo;
+import edu.scau.mis.product.vo.dashboard.RecentOrderItemVo;
+import edu.scau.mis.product.vo.dashboard.TopProductItemVo;
+import edu.scau.mis.product.vo.dashboard.TrendPointVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;

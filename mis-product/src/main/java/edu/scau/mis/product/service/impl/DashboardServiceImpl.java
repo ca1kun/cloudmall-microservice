@@ -1,16 +1,16 @@
 package edu.scau.mis.product.service.impl;
 
-import edu.scau.mis.common.vo.dashboard.CategoryShareVo;
-import edu.scau.mis.common.vo.dashboard.ChannelOrdersVo;
-import edu.scau.mis.common.vo.dashboard.DashboardOverviewVo;
-import edu.scau.mis.common.vo.dashboard.MetricCardVo;
-import edu.scau.mis.common.vo.dashboard.NameValueItemVo;
-import edu.scau.mis.common.vo.dashboard.RecentOrderItemVo;
-import edu.scau.mis.common.vo.dashboard.RecentOrdersVo;
-import edu.scau.mis.common.vo.dashboard.TopProductItemVo;
-import edu.scau.mis.common.vo.dashboard.TopProductsVo;
-import edu.scau.mis.common.vo.dashboard.TrendDataVo;
-import edu.scau.mis.common.vo.dashboard.TrendPointVo;
+import edu.scau.mis.product.vo.dashboard.CategoryShareVo;
+import edu.scau.mis.product.vo.dashboard.ChannelOrdersVo;
+import edu.scau.mis.product.vo.dashboard.DashboardOverviewVo;
+import edu.scau.mis.product.vo.dashboard.MetricCardVo;
+import edu.scau.mis.product.vo.dashboard.NameValueItemVo;
+import edu.scau.mis.product.vo.dashboard.RecentOrderItemVo;
+import edu.scau.mis.product.vo.dashboard.RecentOrdersVo;
+import edu.scau.mis.product.vo.dashboard.TopProductItemVo;
+import edu.scau.mis.product.vo.dashboard.TopProductsVo;
+import edu.scau.mis.product.vo.dashboard.TrendDataVo;
+import edu.scau.mis.product.vo.dashboard.TrendPointVo;
 import edu.scau.mis.product.mapper.IDashboardMapper;
 import edu.scau.mis.product.service.IDashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
