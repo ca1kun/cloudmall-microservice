@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="edu.scau.mis.product.mapper.IProductFeatureMapper">
+
+    <resultMap type="edu.scau.mis.common.domain.ProductFeature" id="productFeatureResultMap">
+        <id property="featureId" column="feature_id"/>
+        <result property="productId" column="product_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="brand" column="brand"/>
+        <result property="priceBand" column="price_band"/>
+        <result property="sceneTags" column="scene_tags"/>
+        <result property="featureTags" column="feature_tags"/>
+        <result property="searchText" column="search_text"/>
+        <result property="featureSummary" column="feature_summary"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectProductFeatureVo">
+        SELECT
+            feature_id,
+            product_id,
+            product_name,
+            category_name,
+            brand,
+            price_band,
+            scene_tags,
+            feature_tags,
+            search_text,
+            feature_summary,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM pos_product_feature
+    </sql>
+
+    <select id="selectByProductId" parameterType="Long" resultMap="productFeatureResultMap">
+        <include refid="selectProductFeatureVo"/>
+        WHERE product_id = #{productId}
+    </select>
+
+    <select id="selectAllFeatures" resultMap="productFeatureResultMap">
+        <include refid="selectProductFeatureVo"/>
+        ORDER BY product_id ASC
+    </select>
+
+    <select id="selectByProductIds" resultMap="productFeatureResultMap">
+        <include refid="selectProductFeatureVo"/>
+        WHERE product_id IN
+        <foreach collection="productIds" item="productId" open="(" close=")" separator=",">
+            #{productId}
+        </foreach>
+    </select>
+
+    <insert id="insertProductFeature" parameterType="edu.scau.mis.common.domain.ProductFeature"
+            useGeneratedKeys="true" keyProperty="featureId">
+        INSERT INTO pos_product_feature (
+            product_id,
+            product_name,
+            category_name,
+            brand,
+            price_band,
+            scene_tags,
+            feature_tags,
+            search_text,
+            feature_summary,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        ) VALUES (
+            #{productId},
+            #{productName},
+            #{categoryName},
+            #{brand},
+            #{priceBand},
+            #{sceneTags},
+            #{featureTags},
+            #{searchText},
+            #{featureSummary},
+            #{createBy},
+            #{createTime},
+            #{updateBy},
+            #{updateTime}
+        )
+    </insert>
+
+    <update id="updateProductFeature" parameterType="edu.scau.mis.common.domain.ProductFeature">
+        UPDATE pos_product_feature
+        SET product_name = #{productName},
+            category_name = #{categoryName},
+            brand = #{brand},
+            price_band = #{priceBand},
+            scene_tags = #{sceneTags},
+            feature_tags = #{featureTags},
+            search_text = #{searchText},
+            feature_summary = #{featureSummary},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        WHERE product_id = #{productId}
+    </update>
+
+    <delete id="deleteByProductId" parameterType="Long">
+        DELETE FROM pos_product_feature WHERE product_id = #{productId}
+    </delete>
+
+</mapper>
