@@ -44,6 +44,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                         url.contains("/auth/register") ||
                         url.contains("/auth/code") ||
                         url.contains("/common/upload") ||
+                        url.contains("/pay/success") ||
+                        url.contains("/mall/pay/success") ||
                         // 2. Swagger/Knife4j 相关资源
                         url.contains("/doc.html") ||
                         url.contains("/webjars/") ||

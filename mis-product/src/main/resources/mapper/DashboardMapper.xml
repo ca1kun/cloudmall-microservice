@@ -49,7 +49,7 @@
     </select>
 
     <!-- Codex added: 按天聚合销售额和订单数。 -->
-    <select id="selectTrend" resultType="edu.scau.mis.common.vo.dashboard.TrendPointVo">
+    <select id="selectTrend" resultType="edu.scau.mis.product.vo.dashboard.TrendPointVo">
         select
             date_format(s.sale_time, '%Y-%m-%d') as dateLabel,
             coalesce(sum(s.total), 0) as sales,
@@ -63,7 +63,7 @@
     </select>
 
     <!-- Codex added: 按商品分类聚合销量，service 层再换算百分比。 -->
-    <select id="selectCategorySalesShare" resultType="edu.scau.mis.common.vo.dashboard.NameValueItemVo">
+    <select id="selectCategorySalesShare" resultType="edu.scau.mis.product.vo.dashboard.NameValueItemVo">
         select
             coalesce(c.category_name, '未分类') as name,
             coalesce(sum(si.quantity), 0) as value
@@ -86,7 +86,7 @@
     </select>
 
     <!-- Codex added: 热销商品排行，从订单明细汇总销量。 -->
-    <select id="selectTopProducts" resultType="edu.scau.mis.common.vo.dashboard.TopProductItemVo">
+    <select id="selectTopProducts" resultType="edu.scau.mis.product.vo.dashboard.TopProductItemVo">
         select
             si.product_name as name,
             coalesce(sum(si.quantity), 0) as count
@@ -101,7 +101,7 @@
     </select>
 
     <!-- Codex added: 最新订单列表，从销售订单表读取。 -->
-    <select id="selectRecentOrders" resultType="edu.scau.mis.common.vo.dashboard.RecentOrderItemVo">
+    <select id="selectRecentOrders" resultType="edu.scau.mis.product.vo.dashboard.RecentOrderItemVo">
         select
             s.sale_no as orderNo,
             coalesce(nullif(s.create_by, ''), '客户') as customer,

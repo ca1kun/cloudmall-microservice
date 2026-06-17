@@ -3,8 +3,10 @@ package edu.scau.mis.common.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -12,6 +14,7 @@ import java.util.Date;
 @Data
 @TableName("sms_coupon")
 public class SmsCoupon implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.AUTO)
@@ -23,8 +26,10 @@ public class SmsCoupon implements Serializable {
 
     private BigDecimal amount; // 金额
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date startTime; // 开始时间
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date endTime; // 结束时间
 
     private BigDecimal minPoint; // 使用门槛

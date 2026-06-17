@@ -1,12 +1,12 @@
 package edu.scau.mis.product.service;
 
-import edu.scau.mis.common.vo.dashboard.CategoryShareVo;
-import edu.scau.mis.common.vo.dashboard.ChannelOrdersVo;
-import edu.scau.mis.common.vo.dashboard.DashboardOverviewVo;
-import edu.scau.mis.common.vo.dashboard.MetricCardVo;
-import edu.scau.mis.common.vo.dashboard.RecentOrdersVo;
-import edu.scau.mis.common.vo.dashboard.TopProductsVo;
-import edu.scau.mis.common.vo.dashboard.TrendDataVo;
+import edu.scau.mis.product.vo.dashboard.CategoryShareVo;
+import edu.scau.mis.product.vo.dashboard.ChannelOrdersVo;
+import edu.scau.mis.product.vo.dashboard.DashboardOverviewVo;
+import edu.scau.mis.product.vo.dashboard.MetricCardVo;
+import edu.scau.mis.product.vo.dashboard.RecentOrdersVo;
+import edu.scau.mis.product.vo.dashboard.TopProductsVo;
+import edu.scau.mis.product.vo.dashboard.TrendDataVo;
 
 import java.util.Map;
 
