@@ -1,15 +1,18 @@
 server:
-  port: 8084 # 购物车专有端口
+  port: 8084
 
 spring:
+  main:
+    web-application-type: servlet
+
   application:
     name: mis-cart
 
   rabbitmq:
-    host: ${MQ_HOST:rabbitmq}
+    host: ${MQ_HOST:127.0.0.1}
     port: 5672
-    username: ${secrets.rabbitmq.username}
-    password: ${secrets.rabbitmq.password}
+    username: ${secrets.rabbitmq.username:guest}
+    password: ${secrets.rabbitmq.password:guest}
 
   cloud:
     openfeign:
@@ -22,9 +25,9 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-    username: ${secrets.mysql.username}
-    password: ${secrets.mysql.password}
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: ${secrets.mysql.username:root}
+    password: ${secrets.mysql.password:root}
     hikari:
       maximum-pool-size: 50
       minimum-idle: 10
@@ -34,9 +37,9 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST:redis}
+      host: ${REDIS_HOST:127.0.0.1}
       port: 6379
-      password: ${secrets.redis.password}
+      password: ${secrets.redis.password:}
       timeout: 3000ms
       lettuce:
         pool:

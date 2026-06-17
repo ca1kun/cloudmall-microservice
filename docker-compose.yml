@@ -1,0 +1,244 @@
+version: "3.8"
+
+services:
+  # ================== 基础中间件 ==================
+  mysql:
+    image: mysql:8.0
+    container_name: mall-mysql
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    command:
+      - --default-authentication-plugin=mysql_native_password
+    restart: always
+
+  redis:
+    image: redis/redis-stack:latest
+    container_name: mall-redis
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    command: redis-server --requirepass 123456
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: mall-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    restart: always
+
+  nacos:
+    image: nacos/nacos-server:v2.2.3
+    container_name: mall-nacos
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    environment:
+      MODE: standalone
+      JVM_XMS: 256m
+      JVM_XMX: 256m
+    restart: always
+
+  # ================== 微服务 ==================
+  gateway:
+    image: eclipse-temurin:17-jdk-alpine
+    container_name: mall-gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./jars/mis-gateway-1.0.jar:/app.jar
+      - ./config:/config:ro
+    environment:
+      NACOS_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      REDIS_HOST: redis
+      MQ_HOST: rabbitmq
+      SPRING_DEVTOOLS_RESTART_ENABLED: "false"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "false"
+    command: >
+      java -Xms128m -Xmx256m -jar /app.jar
+      --spring.cloud.nacos.discovery.server-addr=nacos:8848
+      --spring.cloud.nacos.server-addr=nacos:8848
+    depends_on:
+      - nacos
+    restart: on-failure
+
+  auth:
+    image: eclipse-temurin:17-jdk-alpine
+    container_name: mall-auth
+    ports:
+      - "9201:9201"
+    volumes:
+      - ./jars/mis-auth-1.0.jar:/app.jar
+      - ./config:/config:ro
+    environment:
+      NACOS_ADDR: nacos:8848
+      SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      REDIS_HOST: redis
+      MQ_HOST: rabbitmq
+      SPRING_DEVTOOLS_RESTART_ENABLED: "false"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "false"
+    command: >
+      java -Xms128m -Xmx256m -jar /app.jar
+      --spring.cloud.nacos.discovery.server-addr=nacos:8848
+      --spring.cloud.nacos.server-addr=nacos:8848
+    depends_on:
+      - nacos
+      - mysql
+      - redis
+    restart: on-failure
+
+  api:
+    image: eclipse-temurin:17-jdk-alpine
+    container_name: mall-api
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./jars/mis-api-1.0.jar:/app.jar
+      - ./config:/config:ro
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      REDIS_HOST: redis
+      MQ_HOST: rabbitmq
+    command: java -Xms128m -Xmx256m -jar /app.jar
+    depends_on:
+      - nacos
+      - mysql
+      - redis
+    restart: on-failure
+
+  marketing:
+    image: eclipse-temurin:17-jdk-alpine
+    container_name: mall-marketing
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./jars/mis-marketing-1.0.jar:/app.jar
+      - ./config:/config:ro
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      REDIS_HOST: redis
+      MQ_HOST: rabbitmq
+    command: java -Xms128m -Xmx256m -jar /app.jar
+    depends_on:
+      - nacos
+      - mysql
+      - redis
+      - rabbitmq
+    restart: on-failure
+
+  cart:
+    image: eclipse-temurin:17-jdk-alpine
+    container_name: mall-cart
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./jars/mis-cart-1.0.jar:/app.jar
+      - ./config:/config:ro
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      REDIS_HOST: redis
+      MQ_HOST: rabbitmq
+    command: java -Xms128m -Xmx256m -jar /app.jar
+    depends_on:
+      - nacos
+      - mysql
+      - redis
+      - rabbitmq
+    restart: on-failure
+
+  order:
+    image: eclipse-temurin:17-jdk-alpine
+    container_name: mall-order
+    ports:
+      - "8085:8085"
+    volumes:
+      - ./jars/mis-order-1.0.jar:/app.jar
+      - ./config:/config:ro
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      REDIS_HOST: redis
+      MQ_HOST: rabbitmq
+    command: java -Xms128m -Xmx256m -jar /app.jar
+    depends_on:
+      - nacos
+      - mysql
+      - redis
+      - rabbitmq
+    restart: on-failure
+
+  pay:
+    image: eclipse-temurin:17-jdk-alpine
+    container_name: mall-pay
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./jars/mis-pay-1.0.jar:/app.jar
+      - ./config:/config:ro
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      REDIS_HOST: redis
+      MQ_HOST: rabbitmq
+      SERVER_PUBLIC_IP: 8.163.24.216
+    command: java -Xms128m -Xmx256m -jar /app.jar
+    depends_on:
+      - nacos
+      - mysql
+      - redis
+      - rabbitmq
+    restart: on-failure
+
+  ai:
+    image: eclipse-temurin:17-jdk-alpine
+    container_name: mall-ai
+    ports:
+      - "8087:8087"
+    volumes:
+      - ./jars/mis-ai-1.0.jar:/app.jar
+      - ./config:/config:ro
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      REDIS_HOST: redis
+      MQ_HOST: rabbitmq
+    command: java -Xms128m -Xmx256m -jar /app.jar
+    depends_on:
+      - nacos
+      - redis
+    restart: on-failure
+
+  # ================== 前端 ==================
+  frontend:
+    image: nginx:alpine
+    container_name: mall-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./dist:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - gateway
+    restart: always

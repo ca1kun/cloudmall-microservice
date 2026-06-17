@@ -1,4 +1,3 @@
-# 服务端口号
 server:
   port: 9201
 
@@ -7,9 +6,9 @@ spring:
     name: mis-auth
 
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST:mysql}:${MYSQL_PORT:3306}/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-    username: ${secrets.mysql.username}
-    password: ${secrets.mysql.password}
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/isdp-db?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: ${secrets.mysql.username:root}
+    password: ${secrets.mysql.password:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       max-lifetime: 60000
@@ -18,9 +17,9 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST:redis}
+      host: ${REDIS_HOST:127.0.0.1}
       port: 6379
-      password: ${secrets.redis.password}
+      password: ${secrets.redis.password:}
       database: 0
 
 mybatis-plus:
@@ -32,9 +31,9 @@ mybatis-plus:
 aliyun:
   pnvs:
     endpoint: dypnsapi.aliyuncs.com
-    sign-name: 速通互联验证码
+    sign-name: CloudMall
+    scheme-name: default
     template-code: 100001
-    scheme-name: 默认方案
     code-length: 6
     valid-time: 60
     interval: 60

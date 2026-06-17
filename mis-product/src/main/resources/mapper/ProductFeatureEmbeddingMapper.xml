@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="edu.scau.mis.product.mapper.IProductFeatureEmbeddingMapper">
+
+    <resultMap type="edu.scau.mis.common.domain.ProductFeatureEmbedding" id="productFeatureEmbeddingResultMap">
+        <id property="embeddingId" column="embedding_id"/>
+        <result property="productId" column="product_id"/>
+        <result property="dimensions" column="dimensions"/>
+        <result property="embeddingText" column="embedding_text"/>
+        <result property="embeddingVector" column="embedding_vector"/>
+        <result property="modelName" column="model_name"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectEmbeddingVo">
+        SELECT
+            embedding_id,
+            product_id,
+            dimensions,
+            embedding_text,
+            embedding_vector,
+            model_name,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        FROM pos_product_feature_embedding
+    </sql>
+
+    <select id="selectByProductId" parameterType="Long" resultMap="productFeatureEmbeddingResultMap">
+        <include refid="selectEmbeddingVo"/>
+        WHERE product_id = #{productId}
+    </select>
+
+    <select id="selectAll" resultMap="productFeatureEmbeddingResultMap">
+        <include refid="selectEmbeddingVo"/>
+        ORDER BY product_id ASC
+    </select>
+
+    <select id="selectByProductIds" resultMap="productFeatureEmbeddingResultMap">
+        <include refid="selectEmbeddingVo"/>
+        WHERE product_id IN
+        <foreach collection="productIds" item="productId" open="(" close=")" separator=",">
+            #{productId}
+        </foreach>
+    </select>
+
+    <insert id="insert" parameterType="edu.scau.mis.common.domain.ProductFeatureEmbedding"
+            useGeneratedKeys="true" keyProperty="embeddingId">
+        INSERT INTO pos_product_feature_embedding (
+            product_id,
+            dimensions,
+            embedding_text,
+            embedding_vector,
+            model_name,
+            create_by,
+            create_time,
+            update_by,
+            update_time
+        ) VALUES (
+            #{productId},
+            #{dimensions},
+            #{embeddingText},
+            #{embeddingVector},
+            #{modelName},
+            #{createBy},
+            #{createTime},
+            #{updateBy},
+            #{updateTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="edu.scau.mis.common.domain.ProductFeatureEmbedding">
+        UPDATE pos_product_feature_embedding
+        SET dimensions = #{dimensions},
+            embedding_text = #{embeddingText},
+            embedding_vector = #{embeddingVector},
+            model_name = #{modelName},
+            update_by = #{updateBy},
+            update_time = #{updateTime}
+        WHERE product_id = #{productId}
+    </update>
+
+</mapper>
