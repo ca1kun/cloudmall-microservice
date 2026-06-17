@@ -41,7 +41,8 @@ public class SecurityConfig {
                  .requestMatchers("/pay/success").permitAll()
                  .requestMatchers("/mall/pay/success").permitAll()
                  // 放行商品缓存调试接口，便于在 Apifox 中直接测试缓存读写、删除和 key 构建。
-//                 .requestMatchers("/product/**").permitAll()
+                 .requestMatchers("/product/**").permitAll()
+                 .requestMatchers("/merchant/dashboard/**").permitAll()
 
                  // 列表接口：所有人可见
                  .requestMatchers( "/coupon/list").permitAll()
@@ -53,8 +54,19 @@ public class SecurityConfig {
                 // 2. 认证相关 (主要服务于 mis-auth，其他模块放行也无所谓，因为没有对应接口)
                 .requestMatchers("/auth/login", "/auth/register", "/auth/code", "/auth/logout").permitAll()
                 
-                // 3. 公共工具 (主要服务于 mis-web)
-                .requestMatchers("/common/upload").permitAll()
+                 // 3. 公共工具 (主要服务于 mis-web)
+                 .requestMatchers("/common/upload").permitAll()
+
+                 // AI助手内部调用放行
+                 .requestMatchers("/product/ai/**", "/product/feature/**",
+                                  "/product/{id}", "/product/list/ids", "/product/getBySn/**",
+                                  "/product/lockStock",
+                                  "/order/ai/**", "/cart/ai/**", "/coupon/ai/**",
+                                  "/cart/list", "/cart/delete/batch",
+                                  "/coupon/info/**", "/coupon/use").permitAll()
+
+                 // AI对话接口放行（前端直接调用，由网关鉴权）
+                 .requestMatchers("/ai/**").permitAll()
 
                 // 4. 其余所有请求必须认证
                 .anyRequest().authenticated()

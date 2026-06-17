@@ -128,7 +128,7 @@ public class DashboardServiceImpl implements IDashboardService {
     public ChannelOrdersVo getChannelOrders(String period) {
         Date[] range = periodRange(period);
         int orders = nvl(dashboardMapper.countPosChannelOrders(range[0], range[1]));
-        return new ChannelOrdersVo(Arrays.asList("线下POS"), Arrays.asList(orders));
+        return new ChannelOrdersVo(Arrays.asList("\u5546\u57ce\u8ba2\u5355"), Arrays.asList(orders));
     }
 
     /**
@@ -236,26 +236,39 @@ public class DashboardServiceImpl implements IDashboardService {
         if (status == null) {
             return "UNKNOWN";
         }
-        return status.toUpperCase();
+        return switch (status.trim()) {
+            case "0" -> "PENDING_PAYMENT";
+            case "1" -> "PAID";
+            case "2" -> "SHIPPED";
+            case "3" -> "COMPLETED";
+            case "4" -> "CANCELED";
+            case "5" -> "REFUNDING";
+            case "6" -> "REFUNDED";
+            case "7" -> "RETURN_REJECTED";
+            default -> status.toUpperCase();
+        };
     }
 
     private String statusText(String status) {
         return switch (status) {
-            case "PAID" -> "已支付";
-            case "RESERVED" -> "已预订";
-            case "DELIVERED" -> "已发货";
-            case "COMPLETED" -> "已完成";
-            case "UNPAID" -> "未支付";
-            case "CANCELLED", "CANCELED" -> "已取消";
-            default -> "未知";
+            case "PENDING_PAYMENT" -> "\u5f85\u4ed8\u6b3e";
+            case "PAID" -> "\u5df2\u652f\u4ed8";
+            case "RESERVED" -> "\u5df2\u9884\u8ba2";
+            case "DELIVERED", "SHIPPED" -> "\u5df2\u53d1\u8d27";
+            case "COMPLETED" -> "\u5df2\u5b8c\u6210";
+            case "UNPAID" -> "\u672a\u652f\u4ed8";
+            case "CANCELLED", "CANCELED" -> "\u5df2\u53d6\u6d88";
+            case "REFUNDING" -> "\u9000\u6b3e\u4e2d";
+            case "REFUNDED" -> "\u5df2\u9000\u6b3e";
+            case "RETURN_REJECTED" -> "\u9000\u8d27\u88ab\u62d2";
+            default -> "\u672a\u77e5";
         };
     }
-
     private String statusType(String status) {
         return switch (status) {
             case "PAID", "COMPLETED" -> "success";
-            case "RESERVED", "UNPAID" -> "warning";
-            case "DELIVERED" -> "info";
+            case "RESERVED", "UNPAID", "PENDING_PAYMENT", "REFUNDING" -> "warning";
+            case "DELIVERED", "SHIPPED", "REFUNDED", "RETURN_REJECTED" -> "info";
             case "CANCELLED", "CANCELED" -> "danger";
             default -> "info";
         };
