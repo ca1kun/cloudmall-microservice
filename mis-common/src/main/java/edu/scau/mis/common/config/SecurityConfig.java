@@ -39,7 +39,8 @@ public class SecurityConfig {
                  // 放行库存回滚接口 (仅供内部调用)
                  .requestMatchers("/product/unlockStock").permitAll()
                  // 放行商品缓存调试接口，便于在 Apifox 中直接测试缓存读写、删除和 key 构建。
-//                 .requestMatchers("/product/**").permitAll()
+                 .requestMatchers("/product/**").permitAll()
+                 .requestMatchers("/merchant/dashboard/**").permitAll()
 
                  // 列表接口：所有人可见
                  .requestMatchers( "/coupon/list").permitAll()
